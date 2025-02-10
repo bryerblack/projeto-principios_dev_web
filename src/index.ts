@@ -1,7 +1,7 @@
 import * as express from "express";
 import * as dotenv from "dotenv";
 import sequelize from "./config/database";
-import { UserService } from "./services/userService";
+import { UserService } from "./services/UserService";
 
 dotenv.config();
 
