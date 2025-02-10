@@ -1,4 +1,4 @@
-import { Model, DataTypes, Optional, CreationAttributes, InferCreationAttributes } from "sequelize";
+import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/database";
 
 interface UserAttributes {
@@ -8,10 +8,7 @@ interface UserAttributes {
   password: string;
 }
 
-export class User
-  extends Model<UserAttributes, UserCreationAttributes>
-  implements UserAttributes
-{
+export class User extends Model<UserAttributes> implements UserAttributes {
   public id!: number;
   public name!: string;
   public email!: string;
@@ -39,5 +36,11 @@ User.init(
       allowNull: false,
     },
   },
-  { sequelize, tableName: "users", timestamps: false }
+  {
+    sequelize,
+    tableName: "users",
+    timestamps: true,
+  }
 );
+
+export default User;
