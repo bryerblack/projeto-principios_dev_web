@@ -3,6 +3,7 @@ import sequelize from "../config/database";
 import Equipment from "./Equipment";
 import Rent from "./Rent";
 import Rating from "./Rating";
+import User from "./User";
 
 export class Place extends Model {
   public id!: string;
@@ -39,16 +40,18 @@ Place.init(
       allowNull: false,
     },
     availability: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.JSON,
       allowNull: false,
     },
     ownerId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: "users",
+        model: User,
         key: "id",
       },
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
     },
     averageRating: {
       type: DataTypes.FLOAT,
@@ -57,6 +60,7 @@ Place.init(
   },
   {
     sequelize,
+    modelName: "Place",
     tableName: "places",
     timestamps: true,
   }

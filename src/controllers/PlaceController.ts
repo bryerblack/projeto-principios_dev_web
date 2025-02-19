@@ -78,12 +78,10 @@ export class PlaceController {
       });
       res.status(201).json(equipment);
     } catch (error: any) {
-      res
-        .status(500)
-        .json({
-          message: "Erro ao adicionar equipamento",
-          error: error.message,
-        });
+      res.status(500).json({
+        message: "Erro ao adicionar equipamento",
+        error: error.message,
+      });
     }
   }
 

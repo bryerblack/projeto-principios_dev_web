@@ -13,7 +13,7 @@ export class Rating extends Model {
 Rating.init(
   {
     reviewerId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: "users",
@@ -21,7 +21,7 @@ Rating.init(
       },
     },
     reviewedId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: "users",

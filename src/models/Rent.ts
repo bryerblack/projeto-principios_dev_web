@@ -29,7 +29,7 @@ Rent.init(
       },
     },
     ownerId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: "users",
@@ -37,7 +37,7 @@ Rent.init(
       },
     },
     renterId: {
-      type: DataTypes.UUID,
+      type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: "users",
@@ -49,13 +49,16 @@ Rent.init(
       allowNull: false,
     },
     dateTimes: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.JSON,
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM("pendente", "confirmado", "cancelado", "finalizado"),
+      type: DataTypes.STRING,
       allowNull: false,
       defaultValue: "pendente",
+      validate: {
+        isIn: [["pendente", "confirmado", "cancelado", "finalizado"]],
+      },
     },
     paymentMethod: {
       type: DataTypes.STRING,
