@@ -1,3 +1,46 @@
-node_modules
-dist
-lib
+# 🔹 Node.js
+node_modules/
+npm-debug.log*
+yarn-error.log
+package-lock.json
+.pnpm-debug.log*
+.npm/
+.yarn/
+.yarn-integrity
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 🔹 TypeScript
+dist/
+*.tsbuildinfo
+
+# 🔹 Logs
+logs/
+*.log
+*.log.*
+yarn-debug.log*
+yarn-error.log*
+pm2.log
+debug.log
+error.log
+
+# 🔹 Banco de Dados
+*.sqlite
+*.sqlite3
+/dbdata/
+
+# 🔹 Docker/Podman
+podman-machine-default/
+podman-machine/
+podman-machine.json
+*.pid
+*.sock
+*.log
+containers/
+volumes/
+mysql_data/
+
+# 🔹 
