@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
-  "target": "es6",
-  "module": "commonjs",
-  "declaration": true,
-  "outDir": "./lib",
-  "strict": true
+    "outDir": "dist",
+    "rootDir": "src",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "resolveJsonModule": true
   },
   "include": ["src"],
-  "exclude": ["node_modules", "**/__tests__/*"]
- }
+  "exclude": ["node_modules"]
+}
