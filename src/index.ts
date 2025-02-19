@@ -1,37 +1,36 @@
-import * as express from "express";
+import express from "express";
 import * as dotenv from "dotenv";
 import sequelize from "./config/database";
 import { UserService } from "./services/UserService";
+import * as swaggerUi from "swagger-ui-express";
+import swaggerJsDoc from "swagger-jsdoc";
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
 
-const userService = new UserService();
+// app.use("/users", UserRouter);
 
-app.post("/users", async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-    const user = await userService.createUser(name, email, password);
-    res.json(user);
-  } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Erro ao criar usuário", error: error.message });
-  }
-});
+const swaggerOptions = {
+  swaggerDefinition: {
+    myapi: '3.0.0',
+    info: {
+      title: 'My API',
+      version: '1.0.0',
+      description: 'API documentation',
+    },
+    servers: [
+      {
+        url: 'http://localhost:3000',
+      },
+    ],
+  },
+  apis: ['./routes/*.ts'], // files containing annotations as above
+};
 
-app.get("/users", async (req, res) => {
-  try {
-    const users = await userService.getAllUsers();
-    res.json(users);
-  } catch (error: any) {
-    res
-      .status(500)
-      .json({ message: "Erro ao obter usuários", error: error.message });
-  }
-});
+const swaggerDocs = swaggerJsDoc(swaggerOptions);
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // Testando a conexão e inicializando o servidor
 sequelize

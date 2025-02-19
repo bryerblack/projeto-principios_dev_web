@@ -1,12 +1,21 @@
 import { Request, Response } from "express";
 import { UserService } from "../services/UserService";
+import { Controller, Post, Route, SuccessResponse, Body, Get, Path, Delete } from "tsoa";
+import User from "../models/User";
+import { ApiError } from "src/ApiError";
+import { UserRequest } from "src/DTO/UserRequest";
+import { UserResponse } from "src/DTO/UserResponse";
 
 const userService = new UserService();
 
-export class UserController {
-  async createUser(req: Request, res: Response) {
+@Route("users")
+export class UserController extends Controller {
+
+  @SuccessResponse("201", "Created")
+  @Post()
+  public async createUser(@Body() requestBody: UserRequest) {
     try {
-      const { name, email, password, cpfCnpj, phone, profession } = req.body;
+      const { name, email, password, phone, profession } = requestBody;
       const user = await userService.createUser({
         name,
         email,
@@ -14,46 +23,43 @@ export class UserController {
         phone,
         profession,
       });
-      res.status(201).json(user);
+      // return new UserResponse(user.id, user.name, user.email, user.password, user.phone, user.averageRating, user.profession);
+      return "";
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao criar usuário", error: error.message });
+      throw new ApiError("Internal Server Error", 500, "Erro ao criar usuário")
     }
   }
 
-  async getAllUsers(req: Request, res: Response) {
+  @Get()
+  public async getAllUsers() {
     try {
       const users = await userService.getAllUsers();
-      res.json(users);
+      return "";
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao obter usuários", error: error.message });
+      throw new ApiError("Internal Server Error", 500, "Erro ao obter usuários")
     }
   }
 
-  async getUserById(req: Request, res: Response) {
+  @Get("{userId}")
+  public async getUserById(@Path() userId: string) {
     try {
-      const user = await userService.getUserById(req.params.id);
+      const user = await userService.getUserById(userId);
       if (!user)
-        return res.status(404).json({ message: "Usuário não encontrado" });
-      res.json(user);
+        throw new ApiError("Not Found", 404, "Usuário não encontrado");
+      else
+        return "";
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao obter usuário", error: error.message });
+      throw new ApiError("Internal Server Error", 500, "Erro ao obter usuários")
     }
   }
 
-  async deleteUser(req: Request, res: Response) {
+  @Delete("{userId}")
+  async deleteUser(@Path() userId: string) {
     try {
-      await userService.deleteUser(req.params.id);
-      res.json({ message: "Usuário deletado com sucesso" });
+      await userService.deleteUser(userId);
+      return;
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao deletar usuário", error: error.message });
+      throw new ApiError("Internal Server Error", 500, "Erro ao deletar usuário")
     }
   }
 }
