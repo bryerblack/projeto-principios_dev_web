@@ -44,7 +44,7 @@ Place.init(
       allowNull: false,
     },
     ownerId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: User,

@@ -4,6 +4,36 @@ import Place from "./Place";
 import Rent from "./Rent";
 import Rating from "./Rating";
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           example: "550e8400-e29b-41d4-a716-446655440000"
+ *         name:
+ *           type: string
+ *           example: "João da Silva"
+ *         email:
+ *           type: string
+ *           example: "joao.silva@email.com"
+ *         password:
+ *           type: string
+ *           example: "senhaSegura123"
+ *         phone:
+ *           type: string
+ *           example: "+55 11 99999-9999"
+ *         profession:
+ *           type: string
+ *           example: "Dentista"
+ *         averageRating:
+ *           type: number
+ *           example: 4.5
+ */
 export class User extends Model {
   public id!: string;
   public name!: string;

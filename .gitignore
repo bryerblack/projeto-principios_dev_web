@@ -15,6 +15,7 @@ package-lock.json
 
 # 🔹 TypeScript
 dist/
+lib/
 *.tsbuildinfo
 
 # 🔹 Logs
