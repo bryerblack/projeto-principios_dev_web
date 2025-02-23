@@ -1,15 +1,40 @@
-import User from "../models/User";
+import { UserRepository } from "../repositories/UserRepository";
+
+const userRepository = new UserRepository();
 
 export class UserService {
-  async createUser(name: string, email: string, password: string) {
-    return await User.create({ name, email, password, id:0 });
+  async createUser(data: {
+    name: string;
+    email: string;
+    password: string;
+    phone: string;
+    profession?: string;
+  }) {
+    return await userRepository.createUser(data);
   }
 
   async getAllUsers() {
-    return await User.findAll();
+    return await userRepository.getAllUsers();
   }
 
-  async getUserById(id: number) {
-    return await User.findByPk(id);
+  async getUserById(id: string) {
+    return await userRepository.getUserById(id);
+  }
+
+  async updateUser(
+    id: string,
+    data: Partial<{
+      name: string;
+      email: string;
+      password: string;
+      phone: string;
+      profession?: string;
+    }>
+  ) {
+    return await userRepository.updateUser(id, data);
+  }
+
+  async deleteUser(id: string) {
+    return await userRepository.deleteUser(id);
   }
 }

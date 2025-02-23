@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import * as dotenv from "dotenv";
+import dotenv from "dotenv";
 
 dotenv.config();
 
@@ -12,16 +12,5 @@ const sequelize = new Sequelize({
   database: process.env.DB_NAME || 'projeto_pweb',
   logging: false,
 });
-
-async function testConnection() {
-  try {
-    await sequelize.authenticate();
-    console.log("✅ Conexão com o MySQL estabelecida com sucesso!");
-  } catch (error) {
-    console.error("❌ Erro ao conectar ao banco:", error);
-  }
-}
-
-testConnection();
 
 export default sequelize;
