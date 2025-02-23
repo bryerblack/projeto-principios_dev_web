@@ -1,0 +1,216 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "API de Aluguel de Espaços",
+    "description": "Documentação da API para aluguel de espaços de trabalho.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Servidor Local"
+    }
+  ],
+  "paths": {
+    "/users": {
+      "post": {
+        "summary": "Criar um novo usuário",
+        "tags": ["Usuários"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/User" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Usuário criado com sucesso" },
+          "400": { "description": "Erro na criação do usuário" }
+        }
+      },
+      "get": {
+        "summary": "Listar todos os usuários",
+        "tags": ["Usuários"],
+        "responses": {
+          "200": {
+            "description": "Lista de usuários cadastrados",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/User" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/places": {
+      "post": {
+        "summary": "Criar um novo espaço",
+        "tags": ["Espaços"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Place" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Espaço criado com sucesso" },
+          "400": { "description": "Erro ao criar espaço" }
+        }
+      },
+      "get": {
+        "summary": "Listar todos os espaços",
+        "tags": ["Espaços"],
+        "responses": {
+          "200": {
+            "description": "Lista de espaços disponíveis",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Place" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/rents": {
+      "post": {
+        "summary": "Criar uma nova locação",
+        "tags": ["Locações"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Rent" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Locação criada com sucesso" },
+          "400": { "description": "Erro ao criar locação" }
+        }
+      },
+      "get": {
+        "summary": "Listar todas as locações",
+        "tags": ["Locações"],
+        "responses": {
+          "200": {
+            "description": "Lista de locações registradas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Rent" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ratings": {
+      "post": {
+        "summary": "Criar uma nova avaliação",
+        "tags": ["Avaliações"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Rating" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Avaliação criada com sucesso" },
+          "400": { "description": "Erro ao criar avaliação" }
+        }
+      },
+      "get": {
+        "summary": "Listar todas as avaliações",
+        "tags": ["Avaliações"],
+        "responses": {
+          "200": {
+            "description": "Lista de avaliações registradas",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Rating" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "123e4567-e89b-12d3-a456-426614174000" },
+          "name": { "type": "string", "example": "João Silva" },
+          "email": { "type": "string", "example": "joao.silva@email.com" },
+          "password": {"type": "string", "example": "senha123"},
+          "phone": { "type": "string", "example": "(11) 98765-4321" },
+          "profession": { "type": "string", "example": "Médico" }
+        }
+      },
+      "Place": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "5d4a7f16-b2a3-4e19-9cb5-d6b7a8e2f471" },
+          "name": { "type": "string", "example": "Consultório Odontológico" },
+          "address": {
+            "type": "object",
+            "example": {
+              "street": "Rua das Flores",
+              "number": "123",
+              "city": "São Paulo",
+              "state": "SP",
+              "cep": "01000-000"
+            }
+          },
+          "description": { "type": "string", "example": "Espaço para atendimentos odontológicos equipado com cadeira e materiais básicos." },
+          "pricePerHour": { "type": "number", "example": 150.00 },
+          "availability": { "type": "object", "example": {}},
+          "ownerId": { "type": "string", "example": "5d4a7f16-b2a3-4e19-9cb5-d6b7a8e2f471" }
+        }
+      },
+      "Rent": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "a1b2c3d4-e5f6-7890-1234-56789abcdef0" },
+          "placeId": { "type": "string", "example": "5d4a7f16-b2a3-4e19-9cb5-d6b7a8e2f471" },
+          "ownerId": { "type": "string", "example": "123e4567-e89b-12d3-a456-426614174000" },
+          "renterId": { "type": "string", "example": "123e4567-e89b-12d3-a456-426614174000" },
+          "totalValue": { "type": "number", "example": 450.00 },
+          "dateTimes": {"type": "object", "example": {}},
+          "status": {"type": "string", "example": "pending"},
+          "paymentMethod": {"type": "string", "example": "pix"}
+        }
+      },
+      "Rating": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "c7f6a9d8-b3e2-4f19-8a56-92d71e37a9f1" },
+          "reviewerId": { "type": "string", "example": "123e4567-e89b-12d3-a456-426614174000" },
+          "reviewedId": { "type": "string", "example": "a1b2c3d4-e5f6-7890-1234-56789abcdef0" },
+          "rentId": { "type": "string", "example": "a1b2c3d4-e5f6-7890-1234-56789abcdef0" },
+          "description": {"type": "string", "example": "very good"},
+          "rating": { "type": "number", "example": 4.5 }
+        }
+      }
+    }
+  }
+}
