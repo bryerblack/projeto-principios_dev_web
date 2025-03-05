@@ -21,6 +21,10 @@ export class UserService {
     return await userRepository.getUserById(id);
   }
 
+  async getUserByEmail(email: string){
+    return await userRepository.getUserByEmail(email);
+  }
+
   async updateUser(
     id: string,
     data: Partial<{

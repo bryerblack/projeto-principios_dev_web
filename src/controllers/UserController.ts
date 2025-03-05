@@ -1,12 +1,18 @@
 import { Request, Response } from "express";
-import { UserService } from "../services/UserService";
+import { UserService } from "../services/userService";
 
 const userService = new UserService();
 
 export class UserController {
   async createUser(req: Request, res: Response) {
     try {
-      const { name, email, password, cpfCnpj, phone, profession } = req.body;
+      const { name, email, password, phone, profession } = req.body;
+
+      const existingUser = await userService.getUserByEmail(email);
+      if (existingUser) {
+        res.status(409).json({ message: "Email já cadastrado." });
+      }
+
       const user = await userService.createUser({
         name,
         email,
@@ -16,9 +22,11 @@ export class UserController {
       });
       res.status(201).json(user);
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao criar usuário", error: error.message });
+      if (!res.status) {
+        res
+          .status(500)
+          .json({ message: "Erro ao criar usuário", error: error.message });
+      }
     }
   }
 
