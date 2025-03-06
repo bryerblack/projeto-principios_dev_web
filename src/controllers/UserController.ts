@@ -22,11 +22,9 @@ export class UserController {
       });
       res.status(201).json(user);
     } catch (error: any) {
-      if (!res.status) {
-        res
-          .status(500)
-          .json({ message: "Erro ao criar usuário", error: error.message });
-      }
+      res
+        .status(500)
+        .json({ message: "Erro ao criar usuário", error: error.message });
     }
   }
 
@@ -44,8 +42,9 @@ export class UserController {
   async getUserById(req: Request, res: Response) {
     try {
       const user = await userService.getUserById(req.params.id);
-      if (!user)
-        return res.status(404).json({ message: "Usuário não encontrado" });
+      if (!user) {
+        res.status(404).json({ message: "Usuário não encontrado" });
+      }
       res.json(user);
     } catch (error: any) {
       res
@@ -54,9 +53,57 @@ export class UserController {
     }
   }
 
+  async updateUser(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { name, email, password, phone, profession } = req.body;
+
+      if (!id) {
+        res.status(400).json({ message: "ID do usuário é obrigatório" });
+      }
+
+      const existingUser = await userService.getUserById(id);
+      if (!existingUser) {
+        res.status(404).json({ message: "Usuário não encontrado" });
+      }
+
+      if (email && email !== existingUser.email) {
+        const emailExists = await userService.getUserByEmail(email);
+        if (emailExists) {
+          res.status(409).json({ message: "Email já está em uso" });
+        }
+      }
+
+      const updatedUser = await userService.updateUser(id, {
+        name,
+        email,
+        password,
+        phone,
+        profession,
+      });
+
+      res.status(200).json(updatedUser);
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Erro ao atualizar usuário", error: error.message });
+    }
+  }
+
   async deleteUser(req: Request, res: Response) {
     try {
-      await userService.deleteUser(req.params.id);
+      const { id } = req.params;
+      
+      if (!id) {
+        res.status(400).json({ message: "ID do usuário é obrigatório" });
+      }
+
+      const user = await userService.getUserById(id);
+      if (!user) {
+        res.status(404).json({ message: "Usuário não encontrado" });
+      }
+
+      await userService.deleteUser(id);
       res.json({ message: "Usuário deletado com sucesso" });
     } catch (error: any) {
       res

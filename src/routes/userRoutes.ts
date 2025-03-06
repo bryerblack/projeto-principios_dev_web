@@ -16,6 +16,8 @@ router.get('/:id', (req, res) => {
   return;
 });
 
+router.put('/:id', (req, res) => userController.updateUser(req, res));
+
 // 🔹 Deletar usuário por ID
 router.delete('/:id', (req, res) => userController.deleteUser(req, res));
 
