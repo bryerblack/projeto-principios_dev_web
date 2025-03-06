@@ -16,6 +16,11 @@ router.get('/:id', (req, res) => {
   return;
 });
 
+router.get('/email/:email', (req, res) => {
+  userController.getUserByEmail(req, res);
+  return;
+});
+
 router.put('/:id', (req, res) => userController.updateUser(req, res));
 
 // 🔹 Deletar usuário por ID
