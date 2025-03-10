@@ -7,11 +7,12 @@ package-lock.json
 .npm/
 .yarn/
 .yarn-integrity
-.env
+.env.test
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env
 
 # 🔹 TypeScript
 dist/

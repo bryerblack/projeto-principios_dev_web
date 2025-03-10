@@ -19,6 +19,10 @@ export class UserRepository {
     return await User.findByPk(id);
   }
 
+  async getUserByEmail(email: string){
+    return await User.findOne({ where: {email: email}});
+  }
+
   async updateUser(id: string, data: Partial<User>) {
     const user = await User.findByPk(id);
     if (!user) return null;
@@ -26,6 +30,6 @@ export class UserRepository {
   }
 
   async deleteUser(id: string) {
-    return await User.destroy({ where: { id } });
+    return await User.destroy({ where: { id: parseInt(id) } });
   }
 }

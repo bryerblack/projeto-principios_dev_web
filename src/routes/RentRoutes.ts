@@ -8,16 +8,19 @@ router.post('', (req, res) => rentController.createRent(req, res));
 
 router.get('', (req, res) => rentController.getAllRents(req, res));
 
-router.get(':id', (req, res) => {
+// 🔹 Buscar locação por ID
+router.get('/:id', (req, res) => {
   rentController.getRentById(req, res);
   return;
 });
 
-router.put(':id', (req, res) => {
+// 🔹 Atualizar locação por ID
+router.put('/:id', (req, res) => {
   rentController.updateRent(req, res);
   return;
 });
 
-router.delete(':id', (req, res) => rentController.deleteRent(req, res));
+// 🔹 Deletar locação por ID
+router.delete('/:id', (req, res) => rentController.deleteRent(req, res));
 
 export default router;
