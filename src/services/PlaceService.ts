@@ -25,7 +25,7 @@ export class PlaceService {
   }
 
   async getPlacesByOwner(ownerId: string) {
-    return await placeRepository.getPlaceByOwner(ownerId);
+    return await placeRepository.getPlacesByOwner(ownerId);
   }
   
 
