@@ -1,7 +1,7 @@
 import { Sequelize } from "sequelize";
 import dotenv from "dotenv";
 
-const envFile = process.env.NODE_ENV === "test" ? ".env.test" : ".env";
+const envFile = process.env.NODE_ENV === "test" ? ".env.test" : ".env.local";
 dotenv.config();
 
 const sequelize = new Sequelize({
