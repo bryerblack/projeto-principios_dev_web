@@ -24,6 +24,11 @@ export class PlaceService {
     return await placeRepository.getPlaceById(id);
   }
 
+  async getPlacesByOwner(ownerId: string) {
+    return await placeRepository.getPlacesByOwner(ownerId);
+  }
+  
+
   async updatePlace(
     id: string,
     data: Partial<{

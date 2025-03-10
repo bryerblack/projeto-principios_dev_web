@@ -54,10 +54,63 @@ export class PlaceController {
     }
   }
 
+  async getOwnPlaces(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user.id; // 🔹 Pega o ID do usuário autenticado
+      const places = await placeService.getPlacesByOwner(userId);
+      res.json(places);
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Erro ao obter seus espaços", error: error.message });
+    }
+  }
+
+  async updatePlace(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user.id;
+      const { id } = req.params;
+      const place = await placeService.getPlaceById(id);
+
+      if (!place) {
+        return res.status(404).json({ message: "Espaço não encontrado." });
+      }
+
+      if (place.ownerId !== userId) {
+        return res
+          .status(403)
+          .json({ message: "Você não tem permissão para editar este espaço." });
+      }
+
+      const updatedPlace = await placeService.updatePlace(id, req.body);
+      res.status(200).json(updatedPlace);
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Erro ao atualizar espaço", error: error.message });
+    }
+  }
+
   async deletePlace(req: Request, res: Response) {
     try {
-      await placeService.deletePlace(req.params.id);
-      res.json({ message: "Espaço deletado com sucesso" });
+      const userId = (req as any).user.id;
+      const { id } = req.params;
+      const place = await placeService.getPlaceById(id);
+
+      if (!place) {
+        return res.status(404).json({ message: "Espaço não encontrado." });
+      }
+
+      if (place.ownerId !== userId) {
+        return res
+          .status(403)
+          .json({
+            message: "Você não tem permissão para deletar este espaço.",
+          });
+      }
+
+      await placeService.deletePlace(id);
+      res.json({ message: "Espaço deletado com sucesso." });
     } catch (error: any) {
       res
         .status(500)

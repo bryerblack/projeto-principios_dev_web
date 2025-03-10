@@ -34,9 +34,8 @@ export class UserController {
   async getAllUsers(req: Request, res: Response) {
     try {
       const users = await userService.getAllUsers();
-      if (users.length === 0){
-        res.status(204)
-        .json("Nenhum usuário encontrado.");
+      if (users.length === 0) {
+        res.status(204).json("Nenhum usuário encontrado.");
         return;
       }
       res.json(users);
@@ -80,6 +79,24 @@ export class UserController {
         .status(500)
         .json({ message: "Erro ao obter usuário", error: error.message });
       return;
+    }
+  }
+
+  async getSelf(req: Request, res: Response) {
+    try {
+      const userId = (req as any).user.id;
+      const user = await userService.getUserById(userId);
+      if (!user) {
+        res.status(404).json({ message: "Usuário não encontrado." });
+        return;
+      }
+      res.json(user);
+      return;
+    } catch (error: any) {
+      res
+        .status(500)
+        .json({ message: "Erro ao obter usuário", error: error.message });
+        return;
     }
   }
 

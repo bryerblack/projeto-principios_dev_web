@@ -12,6 +12,95 @@
     }
   ],
   "paths": {
+    "/auth/register": {
+      "post": {
+        "summary": "Registrar um novo usuário",
+        "tags": ["Autenticação"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AuthRegister" },
+              "examples": {
+                "exemplo1": {
+                  "summary": "Cadastro de um usuário médico",
+                  "value": {
+                    "name": "João Silva",
+                    "email": "joao.silva@email.com",
+                    "password": "senha123",
+                    "phone": "(11) 98765-4321",
+                    "profession": "Médico"
+                  }
+                },
+                "exemplo2": {
+                  "summary": "Cadastro de um advogado",
+                  "value": {
+                    "name": "Maria Souza",
+                    "email": "maria.souza@advogados.com",
+                    "password": "seguranca456",
+                    "phone": "(21) 99999-8888",
+                    "profession": "Advogada"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Usuário registrado com sucesso" },
+          "400": { "description": "Erro ao registrar o usuário" }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "Autenticar um usuário",
+        "tags": ["Autenticação"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AuthLogin" },
+              "examples": {
+                "login_sucesso": {
+                  "summary": "Login válido",
+                  "value": {
+                    "email": "joao.silva@email.com",
+                    "password": "senha123"
+                  }
+                },
+                "login_falha": {
+                  "summary": "Tentativa de login com senha incorreta",
+                  "value": {
+                    "email": "joao.silva@email.com",
+                    "password": "senhaErrada"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Usuário autenticado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthResponse" },
+                "examples": {
+                  "resposta_sucesso": {
+                    "summary": "Token JWT gerado após login bem-sucedido",
+                    "value": {
+                      "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Credenciais inválidas" }
+        }
+      }
+    },
     "/users": {
       "post": {
         "summary": "Criar um novo usuário",
@@ -71,57 +160,6 @@
           "404": { "description": "Usuário não encontrado" }
         }
       },
-      "put": {
-        "summary": "Atualizar um usuário",
-        "tags": ["Usuários"],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" },
-            "description": "ID do usuário a ser atualizado"
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": { "$ref": "#/components/schemas/UserUpdate" },
-              "examples": {
-                "exemplo1": {
-                  "summary": "Atualização do nome e telefone",
-                  "value": {
-                    "name": "Carlos Silva",
-                    "phone": "(11) 98765-4321"
-                  }
-                },
-                "exemplo2": {
-                  "summary": "Atualização do email e profissão",
-                  "value": {
-                    "email": "carlos.novo@email.com",
-                    "profession": "Engenheiro"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Usuário atualizado com sucesso",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/User" }
-              }
-            }
-          },
-          "400": { "description": "ID do usuário é obrigatório ou dados inválidos" },
-          "404": { "description": "Usuário não encontrado" },
-          "409": { "description": "Email já cadastrado" },
-          "500": { "description": "Erro ao atualizar usuário" }
-        }
-      },
       "delete": {
         "summary": "Deletar usuário por ID",
         "tags": ["Usuários"],
@@ -135,9 +173,7 @@
         ],
         "responses": {
           "200": { "description": "Usuário deletado com sucesso" },
-          "400": { "description": "ID do usuário é obrigatório" },
-          "404": { "description": "Usuário não encontrado" },
-          "500": { "description": "Erro ao deletar usuário" }
+          "404": { "description": "Usuário não encontrado" }
         }
       }
     },
@@ -489,6 +525,29 @@
           "rentId": { "type": "string", "example": "a1b2c3d4-e5f6-7890-1234-56789abcdef0" },
           "description": {"type": "string", "example": "very good"},
           "rating": { "type": "number", "example": 4.5 }
+        }
+      },
+      "AuthRegister": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "example": "João Silva" },
+          "email": { "type": "string", "example": "joao.silva@email.com" },
+          "password": { "type": "string", "example": "senha123" },
+          "phone": { "type": "string", "example": "(11) 98765-4321" },
+          "profession": { "type": "string", "example": "Médico" }
+        }
+      },
+      "AuthLogin": {
+        "type": "object",
+        "properties": {
+          "email": { "type": "string", "example": "joao.silva@email.com" },
+          "password": { "type": "string", "example": "senha123" }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "token": { "type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." }
         }
       }
     }

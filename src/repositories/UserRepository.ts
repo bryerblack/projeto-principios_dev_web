@@ -30,6 +30,6 @@ export class UserRepository {
   }
 
   async deleteUser(id: string) {
-    return await User.destroy({ where: { id: parseInt(id) } });
+    return await User.destroy({ where: { id: id } });
   }
 }

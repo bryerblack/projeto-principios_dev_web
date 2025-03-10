@@ -20,6 +20,10 @@ export class PlaceRepository {
     return await Place.findByPk(id);
   }
 
+  async getPlacesByOwner(ownerId: string) {
+    return await Place.findAll({ where: { ownerId: ownerId } });
+  }
+
   async updatePlace(id: string, data: Partial<Place>) {
     const place = await Place.findByPk(id);
     if (!place) return null;

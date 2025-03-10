@@ -1,6 +1,7 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/database";
 import Rating from "./Rating";
+import RentSchedule from "./RentSchedule";
 
 export class Rent extends Model {
   public id!: string;
@@ -8,7 +9,6 @@ export class Rent extends Model {
   public ownerId!: string;
   public renterId!: string;
   public totalValue!: number;
-  public dateTimes!: string[];
   public status!: string;
   public paymentMethod!: string;
 }
@@ -52,10 +52,6 @@ Rent.init(
       type: DataTypes.FLOAT,
       allowNull: false,
     },
-    dateTimes: {
-      type: DataTypes.JSON,
-      allowNull: false,
-    },
     status: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -76,7 +72,8 @@ Rent.init(
   }
 );
 
-// Relacionamento com Avaliações
+// Relacionamento com RentSchedule e Rating
+Rent.hasMany(RentSchedule, { foreignKey: "rentId", onDelete: "CASCADE" });
 Rent.hasMany(Rating, { foreignKey: "rentId" });
 
 export default Rent;
