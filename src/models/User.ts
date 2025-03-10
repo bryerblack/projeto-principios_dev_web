@@ -13,6 +13,7 @@ export class User extends Model {
   public phone!: string;
   public profession?: string;
   public averageRating!: number;
+  public role!: "admin" | "user";
 
   async checkPassword(password: string) {
     return await bcrypt.compare(password, this.password);
@@ -51,6 +52,11 @@ User.init(
       type: DataTypes.FLOAT,
       allowNull: false,
       defaultValue: 0,
+    },
+    role: {
+      type: DataTypes.ENUM("admin", "user"),
+      allowNull: false,
+      defaultValue: "user", 
     },
   },
   {

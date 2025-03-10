@@ -6,11 +6,14 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export class AuthService {
-  async register(data: { name: string; email: string; password: string; phone: string; profession?: string }) {
+  async register(data: { name: string; email: string; password: string; phone: string; profession?: string; role?: "admin" | "user" }) {
     const userExists = await User.findOne({ where: { email: data.email } });
     if (userExists) throw new Error("E-mail já cadastrado.");
 
-    const user = await User.create(data);
+    const user = await User.create({
+      ...data,
+      role: data.role || "user",
+    });
     return { token: this.generateToken(user.id), user };
   }
 
