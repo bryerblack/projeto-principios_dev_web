@@ -66,3 +66,4 @@ export class PlaceService {
     }
   }
 }
+export const placeService = new PlaceService();

@@ -2,6 +2,7 @@ import request from "supertest";
 import sequelize from "../../config/database";
 import app from "../../server";
 import { response } from "express";
+import { placeService } from "../../services/PlaceService"; // Importa o placeService
 
 describe("Testes de PlaceController", () => {
   let transaction: any;
@@ -205,5 +206,196 @@ describe("Testes de PlaceController", () => {
 
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Espaço não encontrado");
+  });
+
+  it("Deve deletar um espaço e retornar confirmação quando o ID for válido", async () => {
+    const place = await request(app).post("/places").send({
+      name: "someplace",
+      address: "somewhere",
+      description: "a place for work",
+      pricePerHour: "R$19,00",
+      availability: "afternoon",
+      ownerId: "testId",
+    });
+    const id = place.body.id;
+
+    const response = await request(app).delete(`/places/${id}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe("Espaço deletado com sucesso.");
+  });
+
+  it("Deve lançar erro com código 400 (Bad Request) caso o ID seja inválido", async () => {
+    const response = await request(app).delete("/places/invalidId");
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Id de espaço inválido");
+  });
+
+  it("Deve lançar erro com código 404 (Not Found) caso o espaço não exista", async () => {
+    const response = await request(app).delete("/places/nonExistentId");
+
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe("Espaço não encontrado.");
+  });
+
+  it("Deve lançar erro com código 409 (Conflict) caso o espaço tenha locações ativas", async () => {
+    const place = await request(app).post("/places").send({
+      name: "someplace",
+      address: "somewhere",
+      description: "a place for work",
+      pricePerHour: "R$19,00",
+      availability: "afternoon",
+      ownerId: "testId",
+    });
+    const id = place.body.id;
+
+    // Simula que o espaço tem locações ativas
+    jest.spyOn(placeService, "deletePlace").mockRejectedValueOnce(new Error("Espaço tem locações ativas"));
+
+    const response = await request(app).delete(`/places/${id}`);
+
+    expect(response.status).toBe(409);
+    expect(response.body.message).toBe("Erro ao deletar espaço");
+  });
+
+  it("Deve adicionar um equipamento ao espaço e retornar sucesso", async () => {
+    const place = await request(app).post("/places").send({
+      name: "someplace",
+      address: "somewhere",
+      description: "a place for work",
+      pricePerHour: "R$19,00",
+      availability: "afternoon",
+      ownerId: "testId",
+    });
+    const place_id = place.body.id;
+
+    const response = await request(app).post(`/places/${place_id}/equipments`).send({
+      name: "Projector",
+      description: "High-quality projector",
+      pricePerHour: "R$10,00",
+      quantityAvailable: 2,
+    });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty("id");
+  });
+
+  it("Deve lançar erro com código 400 (Bad Request) caso os dados do equipamento sejam inválidos", async () => {
+    const place = await request(app).post("/places").send({
+      name: "someplace",
+      address: "somewhere",
+      description: "a place for work",
+      pricePerHour: "R$19,00",
+      availability: "afternoon",
+      ownerId: "testId",
+    });
+    const place_id = place.body.id;
+
+    const response = await request(app).post(`/places/${place_id}/equipments`).send({
+      name: null,
+      description: "High-quality projector",
+      pricePerHour: "R$10,00",
+      quantityAvailable: 2,
+    });
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Dados do equipamento inválidos");
+  });
+
+  it("Deve lançar erro com código 404 (Not Found) caso o espaço não exista", async () => {
+    const response = await request(app).post("/places/nonExistentId/equipments").send({
+      name: "Projector",
+      description: "High-quality projector",
+      pricePerHour: "R$10,00",
+      quantityAvailable: 2,
+    });
+
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe("Espaço não encontrado");
+  });
+
+  it("Deve lançar erro com código 409 (Conflict) caso o equipamento já esteja associado ao espaço", async () => {
+    const place = await request(app).post("/places").send({
+      name: "someplace",
+      address: "somewhere",
+      description: "a place for work",
+      pricePerHour: "R$19,00",
+      availability: "afternoon",
+      ownerId: "testId",
+    });
+    const place_id = place.body.id;
+
+    // Simula que o equipamento já está associado ao espaço
+    jest.spyOn(placeService, "addEquipmentToPlace").mockRejectedValueOnce(new Error("Equipamento já associado ao espaço"));
+
+    const response = await request(app).post(`/places/${place_id}/equipments`).send({
+      name: "Projector",
+      description: "High-quality projector",
+      pricePerHour: "R$10,00",
+      quantityAvailable: 2,
+    });
+
+    expect(response.status).toBe(409);
+    expect(response.body.message).toBe("Erro ao adicionar equipamento");
+  });
+
+  it("Deve remover um equipamento do espaço e retornar sucesso", async () => {
+    const place = await request(app).post("/places").send({
+      name: "someplace",
+      address: "somewhere",
+      description: "a place for work",
+      pricePerHour: "R$19,00",
+      availability: "afternoon",
+      ownerId: "testId",
+    });
+    const place_id = place.body.id;
+
+    const equipment = await request(app).post(`/places/${place_id}/equipments`).send({
+      name: "Projector",
+      description: "High-quality projector",
+      pricePerHour: "R$10,00",
+      quantityAvailable: 2,
+    });
+    const equipmentId = equipment.body.id;
+
+    const response = await request(app).delete(`/places/${place_id}/equipments/${equipmentId}`);
+
+    expect(response.status).toBe(200);
+    expect(response.body.message).toBe("Equipamento removido com sucesso");
+  });
+
+  it("Deve lançar erro com código 400 (Bad Request) caso os dados sejam inválidos", async () => {
+    const response = await request(app).delete("/places/invalidPlaceId/equipments/invalidEquipmentId");
+
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Dados inválidos");
+  });
+
+  it("Deve lançar erro com código 404 (Not Found) caso o equipamento ou o espaço não existam", async () => {
+    const response = await request(app).delete("/places/nonExistentPlaceId/equipments/nonExistentEquipmentId");
+
+    expect(response.status).toBe(404);
+    expect(response.body.message).toBe("Equipamento ou espaço não encontrado");
+  });
+
+  it("Deve lançar erro com código 409 (Conflict) caso o equipamento não esteja associado ao espaço", async () => {
+    const place = await request(app).post("/places").send({
+      name: "someplace",
+      address: "somewhere",
+      description: "a place for work",
+      pricePerHour: "R$19,00",
+      availability: "afternoon",
+      ownerId: "testId",
+    });
+    const place_id = place.body.id;
+
+    // Simula que o equipamento não está associado ao espaço
+    jest.spyOn(placeService, "removeEquipmentFromPlace").mockRejectedValueOnce(new Error("Equipamento não associado ao espaço"));
+
+    const response = await request(app).delete(`/places/${place_id}/equipments/nonExistentEquipmentId`);
+
+    expect(response.status).toBe(409);
+    expect(response.body.message).toBe("Erro ao remover equipamento");
   });
 });
