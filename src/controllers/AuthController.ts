@@ -8,8 +8,10 @@ export class AuthController {
     try {
       const user = await authService.register(req.body);
       res.status(201).json(user);
+      return;
     } catch (error: any) {
       res.status(400).json({ message: error.message });
+      return;
     }
   }
 
@@ -17,8 +19,10 @@ export class AuthController {
     try {
       const user = await authService.login(req.body.email, req.body.password);
       res.json(user);
+      return;
     } catch (error: any) {
       res.status(401).json({ message: error.message });
+      return;
     }
   }
 }
