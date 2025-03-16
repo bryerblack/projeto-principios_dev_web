@@ -4,11 +4,12 @@ import Equipment from "./Equipment";
 import Rent from "./Rent";
 import Rating from "./Rating";
 import User from "./User";
+import Address from "./Address";
 
 export class Place extends Model {
   public id!: string;
   public name!: string;
-  public address!: object;
+  public addressId!: string;
   public description?: string;
   public pricePerHour!: number;
   public availability!: string[];
@@ -27,9 +28,15 @@ Place.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    address: {
-      type: DataTypes.JSON,
+    addressId: {
+      type: DataTypes.UUID,
       allowNull: false,
+      references: {
+        model: Address, // 🔹 Relacionamento com Address
+        key: "id",
+      },
+      onDelete: "CASCADE",
+      onUpdate: "CASCADE",
     },
     description: {
       type: DataTypes.STRING,
@@ -67,6 +74,7 @@ Place.init(
 );
 
 // Relacionamentos
+Place.belongsTo(Address, { foreignKey: "addressId" });
 Place.hasMany(Equipment, { foreignKey: "placeId" });
 Place.hasMany(Rent, { foreignKey: "placeId" });
 Place.hasMany(Rating, { foreignKey: "placeId" });

@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { RentService } from "../services/RentService";
-import { AuthenticatedRequest } from "../middlewares/AuthMiddleware";
+import { AuthenticatedRequest } from "../types/AuthenticatedRequest";
 import { PlaceService } from "../services/PlaceService";
 
 const rentService = new RentService();

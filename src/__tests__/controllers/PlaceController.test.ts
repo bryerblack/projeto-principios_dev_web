@@ -1,14 +1,64 @@
 import request from "supertest";
 import sequelize from "../../config/database";
 import app from "../../server";
-import { response } from "express";
 import { placeService } from "../../services/PlaceService"; // Importa o placeService
+import Address from "../../models/Address";
+import { AddressRepository } from "../../repositories/AddressRepository";
 
 describe("Testes de PlaceController", () => {
   let transaction: any;
+  let token: string;
+  let userId: string;
+  let address: Address;
+  let address2: Address;
+  const addressRepository = new AddressRepository();
 
   beforeAll(async () => {
-    await sequelize.sync({ force: true }); // 🔹 Garante que o banco de testes seja criado
+    await sequelize.sync({ force: true });
+    const addressCreation = await addressRepository.createAddress({
+      cep: "58433264",
+      pais: "Brasil",
+      estado: "São Paulo",
+      cidade: "São Paulo",
+      bairro: "Centro",
+      rua: "Rua das Rosas",
+      numero: "123",
+      complemento: "Apto 45",
+    });
+
+    address = addressCreation.dataValues;
+
+    const address2Creation = await addressRepository.createAddress({
+      cep: "12345618",
+      pais: "Brasil",
+      estado: "Rio de Janeiro",
+      cidade: "Rio de Janeiro",
+      bairro: "Copacabana",
+      rua: "Avenida Atlântica",
+      numero: "456",
+      complemento: "Sala 10",
+    });
+
+    address2 = address2Creation.dataValues;
+    // 🔹 Criar um usuário de teste e obter o token de autenticação
+    const userResponse = await request(app).post("/auth/register").send({
+      name: "Usuário Teste",
+      email: "test@example.com",
+      password: "senha123",
+      phone: "(11) 98765-4321",
+      profession: "Engenheiro",
+      role: "admin",
+    });
+
+    userId = userResponse.body.user.id;
+
+    // 🔹 Autenticar o usuário e obter o token
+    const loginResponse = await request(app).post("/auth/login").send({
+      email: "test@example.com",
+      password: "senha123",
+    });
+
+    token = loginResponse.body.token;
   });
 
   beforeEach(async () => {
@@ -24,376 +74,485 @@ describe("Testes de PlaceController", () => {
   });
 
   it("Deve criar um espaço e retornar código 201", async () => {
-    const response = await request(app).post("/places").send({
+    const response = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "someplace",
-        address: "somewhere",
+        address: address,
         description: "a place for work",
-        pricePerHour: "R$19,00",
+        pricePerHour: 19.0,
         availability: "afternoon",
-        ownerId: "testId",
-    });
+        ownerId: userId,
+      });
 
+    console.log(response.body.message);
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("id");
-    expect(response.body.ownerId).toBe("testId");
+    expect(response.body.ownerId).toBe(userId);
   });
 
   it("Não deve criar um espaço e deve retornar código 409 caso receba um endereço já cadastrado", async () => {
-    await request(app).post("/olaces").send({
+    await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "someplace",
-        address: "somewhere",
+        address,
         description: "a place for work",
-        pricePerHour: "R$19,00",
+        pricePerHour: 19.0,
         availability: "afternoon",
-        ownerId: "testId",
-    });
+        ownerId: userId,
+      });
 
-    const response = await request(app).post("/places").send({
+    const response = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "another lace",
-        address: "somewhere",
+        address,
         description: "a place for work, again",
-        pricePerHour: "R$20,00",
+        pricePerHour: 20.0,
         availability: "night",
-        ownerId: "testId",
-    });
+        ownerId: userId,
+      });
 
     expect(response.status).toBe(409);
-    expect(response.body.message).toBe("Endereço já cadastrado.")
+    expect(response.body.message).toBe("Endereço já cadastrado.");
   });
 
   it("Deve retornar código 400 (Bad Request) caso os dados sejam inválidos ou incompletos", async () => {
-    const response = await request(app).post("/places").send({
+    const response = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "someplace",
         address: null,
         description: "a place for work",
-        pricePerHour: "R$19,00",
+        pricePerHour: 19.0,
         availability: "afternoon",
-        ownerId: "testId",
-    });
+        ownerId: userId,
+      });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toBe("Dados do espaço inválidos")
+    expect(response.body.message).toBe("Dados do espaço inválidos");
   });
 
   it("Deve retornar código 200 (OK) e a lista de espaços cadastrados caso existam espaços.", async () => {
-    await request(app).post("/olaces").send({
+    await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "someplace",
-        address: "somewhere",
+        address,
         description: "a place for work",
-        pricePerHour: "R$19,00",
+        pricePerHour: 19.0,
         availability: "afternoon",
-        ownerId: "testId",
-    });
+        ownerId: userId,
+      });
 
-    await request(app).post("/places").send({
+    await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "another place",
-        address: "elsewhere",
+        address: address2,
         description: "a place for work, again",
-        pricePerHour: "R$20,00",
+        pricePerHour: 20.0,
         availability: "night",
-        ownerId: "testId2",
-    });
+        ownerId: userId,
+      });
 
-    const response = await request(app).get("/places");
+    const response = await request(app)
+      .get("/places/own")
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(200);
     expect(response.body.length).toBeGreaterThan(1);
   });
 
   it("Deve retornar código 204 (No Content) caso não existam espaços cadastrados.", async () => {
-    const response = await request(app).get("/places");
+    const response = await request(app)
+      .get("/places/own")
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(204);
     expect(response.body.message).toBe("Nenhum espaço cadastrado");
   });
 
   it("Deve retornar código 200 (OK) e os detalhes do espaço caso o ID seja válido e corresponda a um espaço existente.", async () => {
-    const place = await request(app).post("/places").send({
+    const place = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "someplace",
-        address: "somewhere",
+        address,
         description: "a place for work",
-        pricePerHour: "R$19,00",
+        pricePerHour: 19.0,
         availability: "afternoon",
-        ownerId: "testId",
-    });
+        ownerId: userId,
+      });
+
     const id = place.body.id;
 
-    const response = await request(app).get(`/places/${id}`);
+    const response = await request(app)
+      .get(`/places/${id}`)
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(200);
-    expect(response.body.ownerId).toBe("testId");
+    expect(response.body.ownerId).toBe(userId);
   });
 
   it("Deve retornar código 400 (Bad Request) caso o ID seja inválido, nulo ou vazio.", async () => {
-    const place = await request(app).post("/places").send({
+    const place = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "someplace",
-        address: "somewhere",
+        address,
         description: "a place for work",
-        pricePerHour: "R$19,00",
+        pricePerHour: 19.0,
         availability: "afternoon",
-        ownerId: "testId",
-    });
+        ownerId: userId,
+      });
 
-    const response = await request(app).get("/places/");
+    const response = await request(app)
+      .get("/places")
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe("Id de espaço inválido");
   });
 
   it("Deve retornar código 404 (Not Found) caso o ID não corresponda a um espaço existente.", async () => {
-    const response = await request(app).get("/places/id");
+    const response = await request(app)
+      .get("/places/id")
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Espaço não encontrado");
   });
 
   it("Deve atualizar o espaço e retornar código 200 (OK) quando receber dados válidos.", async () => {
-    const place = await request(app).post("/places").send({
+    const place = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "someplace",
-        address: "somewhere",
+        address,
         description: "a place for work",
-        pricePerHour: "R$19,00",
+        pricePerHour: 19.0,
         availability: "afternoon",
-        ownerId: "testId",
-    });
+        ownerId: userId,
+      });
     const id = place.body.id;
 
-    const response = await request(app).put(`/places/${id}`).send({
+    const response = await request(app)
+      .put(`/places/${id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "someplaceNew",
-        address: "somewhereNew",
+        address: address2,
         description: "a new place for work",
-        pricePerHour: "R$12,00",
+        pricePerHour: 19.0,
         availability: "afternoon",
-        ownerId: "testId",
-    });
+        ownerId: userId,
+      });
 
     expect(response.status).toBe(200);
     expect(response.body.name).toBe("someplaceNew");
   });
 
   it("Deve retornar código 400 (Bad Request) caso o ID seja inválido ou os dados sejam inválidos.", async () => {
-    const place = await request(app).post("/places").send({
+    const place = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "someplace",
-        address: "somewhere",
+        address,
         description: "a place for work",
-        pricePerHour: "R$19,00",
+        pricePerHour: 19.0,
         availability: "afternoon",
         ownerId: "testId",
-    });
+      });
     const id = place.body.id;
 
-    const response = await request(app).put(`/places/${id}`).send({
+    const response = await request(app)
+      .put(`/places/${id}`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "someplaceNew",
         description: "a new place for work",
-        pricePerHour: "R$12,00",
+        pricePerHour: 12.0,
         availability: "afternoon",
         ownerId: "testId",
-    });
+      });
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe("Dados inválidos");
   });
 
   it("Deve retornar código 400 (Bad Request) caso o ID seja inválido ou os dados sejam inválidos.", async () => {
-    const response = await request(app).put("/places/id").send({
+    const response = await request(app)
+      .put("/places/id")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
         name: "someplaceNew",
-        address: "somewhereNew",
+        address: address2,
         description: "a new place for work",
-        pricePerHour: "R$12,00",
+        pricePerHour: 12.0,
         availability: "afternoon",
-        ownerId: "testId",
-    });
+        ownerId: userId,
+      });
 
     expect(response.status).toBe(404);
-    expect(response.body.message).toBe("Espaço não encontrado");
+    expect(response.body.message).toBe("Espaço não encontrado.");
   });
 
   it("Deve deletar um espaço e retornar confirmação quando o ID for válido", async () => {
-    const place = await request(app).post("/places").send({
-      name: "someplace",
-      address: "somewhere",
-      description: "a place for work",
-      pricePerHour: "R$19,00",
-      availability: "afternoon",
-      ownerId: "testId",
-    });
+    const place = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "someplace",
+        address,
+        description: "a place for work",
+        pricePerHour: 19.0,
+        availability: "afternoon",
+        ownerId: userId,
+      });
     const id = place.body.id;
 
-    const response = await request(app).delete(`/places/${id}`);
+    const response = await request(app)
+      .delete(`/places/${id}`)
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("Espaço deletado com sucesso.");
   });
 
   it("Deve lançar erro com código 400 (Bad Request) caso o ID seja inválido", async () => {
-    const response = await request(app).delete("/places/invalidId");
+    const response = await request(app)
+      .delete("/places/invalidId")
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe("Id de espaço inválido");
   });
 
   it("Deve lançar erro com código 404 (Not Found) caso o espaço não exista", async () => {
-    const response = await request(app).delete("/places/nonExistentId");
+    const response = await request(app)
+      .delete("/places/nonExistentId")
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Espaço não encontrado.");
   });
 
   it("Deve lançar erro com código 409 (Conflict) caso o espaço tenha locações ativas", async () => {
-    const place = await request(app).post("/places").send({
-      name: "someplace",
-      address: "somewhere",
-      description: "a place for work",
-      pricePerHour: "R$19,00",
-      availability: "afternoon",
-      ownerId: "testId",
-    });
+    const place = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "someplace",
+        address,
+        description: "a place for work",
+        pricePerHour: 19.0,
+        availability: "afternoon",
+        ownerId: userId,
+      });
     const id = place.body.id;
 
     // Simula que o espaço tem locações ativas
-    jest.spyOn(placeService, "deletePlace").mockRejectedValueOnce(new Error("Espaço tem locações ativas"));
+    jest
+      .spyOn(placeService, "deletePlace")
+      .mockRejectedValueOnce(new Error("Espaço tem locações ativas"));
 
-    const response = await request(app).delete(`/places/${id}`);
+    const response = await request(app)
+      .delete(`/places/${id}`)
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(409);
     expect(response.body.message).toBe("Erro ao deletar espaço");
   });
 
   it("Deve adicionar um equipamento ao espaço e retornar sucesso", async () => {
-    const place = await request(app).post("/places").send({
-      name: "someplace",
-      address: "somewhere",
-      description: "a place for work",
-      pricePerHour: "R$19,00",
-      availability: "afternoon",
-      ownerId: "testId",
-    });
+    const place = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "someplace",
+        address,
+        description: "a place for work",
+        pricePerHour: 19.0,
+        availability: "afternoon",
+        ownerId: userId,
+      });
     const place_id = place.body.id;
 
-    const response = await request(app).post(`/places/${place_id}/equipments`).send({
-      name: "Projector",
-      description: "High-quality projector",
-      pricePerHour: "R$10,00",
-      quantityAvailable: 2,
-    });
+    const response = await request(app)
+      .post(`/places/${place_id}/equipments`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "Projector",
+        description: "High-quality projector",
+        pricePerHour: 10.0,
+        quantityAvailable: 2,
+      });
 
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("id");
   });
 
   it("Deve lançar erro com código 400 (Bad Request) caso os dados do equipamento sejam inválidos", async () => {
-    const place = await request(app).post("/places").send({
-      name: "someplace",
-      address: "somewhere",
-      description: "a place for work",
-      pricePerHour: "R$19,00",
-      availability: "afternoon",
-      ownerId: "testId",
-    });
+    const place = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "someplace",
+        address,
+        description: "a place for work",
+        pricePerHour: 19.0,
+        availability: "afternoon",
+        ownerId: userId,
+      });
     const place_id = place.body.id;
 
-    const response = await request(app).post(`/places/${place_id}/equipments`).send({
-      name: null,
-      description: "High-quality projector",
-      pricePerHour: "R$10,00",
-      quantityAvailable: 2,
-    });
+    const response = await request(app)
+      .post(`/places/${place_id}/equipments`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: null,
+        description: "High-quality projector",
+        pricePerHour: 10.0,
+        quantityAvailable: 2,
+      });
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe("Dados do equipamento inválidos");
   });
 
   it("Deve lançar erro com código 404 (Not Found) caso o espaço não exista", async () => {
-    const response = await request(app).post("/places/nonExistentId/equipments").send({
-      name: "Projector",
-      description: "High-quality projector",
-      pricePerHour: "R$10,00",
-      quantityAvailable: 2,
-    });
+    const response = await request(app)
+      .post("/places/nonExistentId/equipments")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "Projector",
+        description: "High-quality projector",
+        pricePerHour: 10.0,
+        quantityAvailable: 2,
+      });
 
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Espaço não encontrado");
   });
 
   it("Deve lançar erro com código 409 (Conflict) caso o equipamento já esteja associado ao espaço", async () => {
-    const place = await request(app).post("/places").send({
-      name: "someplace",
-      address: "somewhere",
-      description: "a place for work",
-      pricePerHour: "R$19,00",
-      availability: "afternoon",
-      ownerId: "testId",
-    });
+    const place = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "someplace",
+        address,
+        description: "a place for work",
+        pricePerHour: 19.0,
+        availability: "afternoon",
+        ownerId: "testId",
+      });
     const place_id = place.body.id;
 
     // Simula que o equipamento já está associado ao espaço
-    jest.spyOn(placeService, "addEquipmentToPlace").mockRejectedValueOnce(new Error("Equipamento já associado ao espaço"));
+    jest
+      .spyOn(placeService, "addEquipmentToPlace")
+      .mockRejectedValueOnce(new Error("Equipamento já associado ao espaço"));
 
-    const response = await request(app).post(`/places/${place_id}/equipments`).send({
-      name: "Projector",
-      description: "High-quality projector",
-      pricePerHour: "R$10,00",
-      quantityAvailable: 2,
-    });
+    const response = await request(app)
+      .post(`/places/${place_id}/equipments`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "Projector",
+        description: "High-quality projector",
+        pricePerHour: 10.0,
+        quantityAvailable: 2,
+      });
 
     expect(response.status).toBe(409);
     expect(response.body.message).toBe("Erro ao adicionar equipamento");
   });
 
   it("Deve remover um equipamento do espaço e retornar sucesso", async () => {
-    const place = await request(app).post("/places").send({
-      name: "someplace",
-      address: "somewhere",
-      description: "a place for work",
-      pricePerHour: "R$19,00",
-      availability: "afternoon",
-      ownerId: "testId",
-    });
+    const place = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "someplace",
+        address,
+        description: "a place for work",
+        pricePerHour: 19.0,
+        availability: "afternoon",
+        ownerId: "testId",
+      });
     const place_id = place.body.id;
 
-    const equipment = await request(app).post(`/places/${place_id}/equipments`).send({
-      name: "Projector",
-      description: "High-quality projector",
-      pricePerHour: "R$10,00",
-      quantityAvailable: 2,
-    });
+    const equipment = await request(app)
+      .post(`/places/${place_id}/equipments`)
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "Projector",
+        description: "High-quality projector",
+        pricePerHour: 10.0,
+        quantityAvailable: 2,
+      });
     const equipmentId = equipment.body.id;
 
-    const response = await request(app).delete(`/places/${place_id}/equipments/${equipmentId}`);
+    const response = await request(app)
+      .delete(`/places/${place_id}/equipments/${equipmentId}`)
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(200);
     expect(response.body.message).toBe("Equipamento removido com sucesso");
   });
 
   it("Deve lançar erro com código 400 (Bad Request) caso os dados sejam inválidos", async () => {
-    const response = await request(app).delete("/places/invalidPlaceId/equipments/invalidEquipmentId");
+    const response = await request(app)
+      .delete("/places/invalidPlaceId/equipments/invalidEquipmentId")
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(400);
     expect(response.body.message).toBe("Dados inválidos");
   });
 
   it("Deve lançar erro com código 404 (Not Found) caso o equipamento ou o espaço não existam", async () => {
-    const response = await request(app).delete("/places/nonExistentPlaceId/equipments/nonExistentEquipmentId");
+    const response = await request(app)
+      .delete("/places/nonExistentPlaceId/equipments/nonExistentEquipmentId")
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(404);
-    expect(response.body.message).toBe("Equipamento ou espaço não encontrado");
+    expect(response.body.message).toBe("Espaço não encontrado");
   });
 
   it("Deve lançar erro com código 409 (Conflict) caso o equipamento não esteja associado ao espaço", async () => {
-    const place = await request(app).post("/places").send({
-      name: "someplace",
-      address: "somewhere",
-      description: "a place for work",
-      pricePerHour: "R$19,00",
-      availability: "afternoon",
-      ownerId: "testId",
-    });
+    const place = await request(app)
+      .post("/places")
+      .set("Authorization", `Bearer ${token}`)
+      .send({
+        name: "someplace",
+        address,
+        description: "a place for work",
+        pricePerHour: 19.0,
+        availability: "afternoon",
+        ownerId: "testId",
+      });
     const place_id = place.body.id;
 
     // Simula que o equipamento não está associado ao espaço
-    jest.spyOn(placeService, "removeEquipmentFromPlace").mockRejectedValueOnce(new Error("Equipamento não associado ao espaço"));
+    jest
+      .spyOn(placeService, "removeEquipmentFromPlace")
+      .mockRejectedValueOnce(new Error("Equipamento não associado ao espaço"));
 
-    const response = await request(app).delete(`/places/${place_id}/equipments/nonExistentEquipmentId`);
+    const response = await request(app)
+      .delete(`/places/${place_id}/equipments/nonExistentEquipmentId`)
+      .set("Authorization", `Bearer ${token}`);
 
     expect(response.status).toBe(409);
     expect(response.body.message).toBe("Erro ao remover equipamento");
