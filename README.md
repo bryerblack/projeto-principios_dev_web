@@ -4,7 +4,7 @@ O Rent'a'Space é um projeto web com o intuito de disponibilizar para profission
 Aqui teremos diversos espaços para incontáveis profissões, desde consultorios, oficinas, estudios de gravação; todos equipados e disponibilizados por pessoas da area que possuem estes locais e se interessam em disponibilizar para colegas de profissão, por um preço é claro.
 
 # Definição e configuração inicial do projeto
-## Descrição
+### Descrição
 A configuração inicial do projeto foi realizada utilizando Node.js com Express, sendo escrita em TypeScript para garantir maior segurança e organização do código. O projeto faz uso das seguintes dependências:
 **dotenv**: Permite a utilização de variáveis de ambiente, armazenadas no arquivo .env, para configurar informações sensíveis como credenciais do banco de dados e portas utilizadas pela aplicação.
 **express**: Framework para criação de APIs REST de forma simples e eficiente, facilitando a criação de rotas e o gerenciamento de requisições HTTP.
@@ -14,7 +14,7 @@ A configuração inicial do projeto foi realizada utilizando Node.js com Express
 A aplicação também foi conteinerizada utilizando Podman, permitindo que o banco de dados e o servidor rodem em ambientes isolados e reproduzíveis.
 Esta API consiste em um sistema de locação de ambientes de trabalho, de profissionais para profissionais, como por exemplo, um dentista pode alugar sua clínica em horários vagos para outro dentista e gerar uma renda a mais, ou um marceneiro poder buscar por uma oficina disponível enquanto a sua está inacessível. Por meio desta aplicação uma variedade de ambientes e ferramentas estarão disponíveis, de clínicas ou escritórios, estúdios e oficinas.
 
-## Instalação e Configurações
+### Instalação e Configurações
 Antes de iniciar o projeto, verifique se você possui instalado:
 _Node.js_ (versão 18 ou superior)
 _MySQL_ (localmente ou rodando via container no Podman)
@@ -55,7 +55,7 @@ Isso usará o nodemon para reiniciar o servidor sempre que houver mudanças nos 
 Após iniciar o servidor, a API estará disponível em: http://localhost:3000
 E a documentação pode ser acessada em: http://localhost:3000/api-docs
 
-## Rotas Implementadas
+### Rotas Implementadas
 - GET /users - Retorna uma lista de todos os usuários;
 - POST /users - Cria um novo usuário;
 - GET /users:id - Retorna um usuário específico;
