@@ -3,6 +3,7 @@ import { PlaceRepository } from "../repositories/PlaceRepository";
 import { Transaction } from "sequelize";
 import { RentScheduleRepository } from "../repositories/RentScheduleRepository";
 import Rent from "../models/Rent";
+import { HttpError } from "../errors/HttpError";
 
 const rentRepository = new RentRepository();
 const placeRepository = new PlaceRepository();
@@ -57,7 +58,7 @@ export class RentService {
     // Buscar a locação no banco
     const rent = await rentRepository.getRentById(id);
     if (!rent) {
-      throw new Error("Locação não encontrada.");
+      throw new HttpError("Locação não encontrada.", 404);
     }
 
     // Atualiza os dados da locação
@@ -84,7 +85,7 @@ export class RentService {
   async deleteRent(id: string) {
     const rent = await rentRepository.getRentById(id);
     if (!rent) {
-      throw new Error("Locação não encontrada.");
+      throw new HttpError("Locação não encontrada.", 404);
     }
 
     return await rentRepository.deleteRent(id);
@@ -92,19 +93,17 @@ export class RentService {
 
   async approveOrRejectRent(rentId: string, ownerId: string, status: string) {
     if (!["approved", "rejected"].includes(status)) {
-      throw new Error("Status inválido. Use 'approved' ou 'rejected'.");
+      throw new HttpError("Status inválido. Use 'approved' ou 'rejected'.", 406);
     }
 
     const rent = await rentRepository.getRentById(rentId);
 
     if (!rent) {
-      throw new Error("Locação não encontrada.");
+      throw new HttpError("Locação não encontrada.", 404);
     }
 
     if (rent.ownerId !== ownerId) {
-      throw new Error(
-        "Você não tem permissão para aprovar ou rejeitar esta locação."
-      );
+      throw new HttpError("Você não tem permissão para cancelar esta locação.", 403);
     }
 
     return await rentRepository.updateRent(rentId, { status });
@@ -117,18 +116,19 @@ export class RentService {
 
   async cancelRent(rentId: string, userId: string) {
     const rent = await rentRepository.getRentById(rentId);
+
     if (!rent) {
-      throw new Error("Locação não encontrada.");
+      throw new HttpError("Locação não encontrada.", 404);
     }
-
+  
     if (rent.renterId !== userId) {
-      throw new Error("Você não tem permissão para cancelar esta locação.");
+      throw new HttpError("Você não tem permissão para cancelar esta locação.", 403);
     }
-
+  
     if (rent.status !== "pending") {
-      throw new Error("Somente locações pendentes podem ser canceladas.");
+      throw new HttpError("Somente locações pendentes podem ser canceladas.", 409);
     }
 
-    return await rentRepository.deleteRent(rentId);
+    return await rentRepository.updateRentStatus(rentId, "cancelado");
   }
 }

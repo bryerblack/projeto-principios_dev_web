@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import User from "../models/User";
 import dotenv from "dotenv";
+import { HttpError } from "../errors/HttpError";
 
 dotenv.config();
 
@@ -15,7 +16,7 @@ export class AuthService {
     role?: "admin" | "user";
   }) {
     const userExists = await User.findOne({ where: { email: data.email } });
-    if (userExists) throw new Error("E-mail já cadastrado.");
+    if (userExists) throw new HttpError("E-mail já cadastrado.", 409);
 
     const user = await User.create({
       ...data,
@@ -27,7 +28,7 @@ export class AuthService {
   async login(email: string, password: string) {
     const user = await User.findOne({ where: { email } });
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      throw new Error("E-mail ou senha incorretos.");
+      throw new HttpError("E-mail ou senha incorretos.", 401);
     }
 
     return { token: this.generateToken(user), user };

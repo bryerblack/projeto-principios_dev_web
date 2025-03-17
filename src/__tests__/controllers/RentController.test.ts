@@ -27,7 +27,7 @@ describe("Testes de RentController", () => {
       password: "senha123",
       phone: "(11) 98765-4321",
       profession: "Empresário",
-      role: "owner",
+      role: "user",
     });
 
     const renterResponse = await request(app).post("/auth/register").send({
@@ -36,8 +36,10 @@ describe("Testes de RentController", () => {
       password: "senha123",
       phone: "(11) 91234-5678",
       profession: "Arquiteto",
-      role: "renter",
+      role: "user",
     });
+
+    console.log(ownerResponse);
 
     userId = ownerResponse.body.user.id;
     renterId = renterResponse.body.user.id;
