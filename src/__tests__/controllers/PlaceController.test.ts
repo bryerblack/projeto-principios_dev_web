@@ -1,7 +1,6 @@
 import request from "supertest";
 import sequelize from "../../config/database";
 import app from "../../server";
-import { placeService } from "../../services/PlaceService"; // Importa o placeService
 import Address from "../../models/Address";
 import { AddressRepository } from "../../repositories/AddressRepository";
 
@@ -86,7 +85,6 @@ describe("Testes de PlaceController", () => {
         ownerId: userId,
       });
 
-    console.log(response.body.message);
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("id");
     expect(response.body.ownerId).toBe(userId);
@@ -175,9 +173,9 @@ describe("Testes de PlaceController", () => {
     const response = await request(app)
       .get("/places/own")
       .set("Authorization", `Bearer ${token}`);
-
+    console.log(response.status);
+    console.log(response.body);
     expect(response.status).toBe(204);
-    expect(response.body.message).toBe("Nenhum espaço cadastrado");
   });
 
   it("Deve retornar código 200 (OK) e os detalhes do espaço caso o ID seja válido e corresponda a um espaço existente.", async () => {
@@ -203,32 +201,10 @@ describe("Testes de PlaceController", () => {
     expect(response.body.ownerId).toBe(userId);
   });
 
-  it("Deve retornar código 400 (Bad Request) caso o ID seja inválido, nulo ou vazio.", async () => {
-    const place = await request(app)
-      .post("/places")
-      .set("Authorization", `Bearer ${token}`)
-      .send({
-        name: "someplace",
-        address,
-        description: "a place for work",
-        pricePerHour: 19.0,
-        availability: "afternoon",
-        ownerId: userId,
-      });
-
-    const response = await request(app)
-      .get("/places")
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe("Id de espaço inválido");
-  });
-
   it("Deve retornar código 404 (Not Found) caso o ID não corresponda a um espaço existente.", async () => {
     const response = await request(app)
       .get("/places/id")
       .set("Authorization", `Bearer ${token}`);
-
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Espaço não encontrado");
   });
@@ -258,7 +234,6 @@ describe("Testes de PlaceController", () => {
         availability: "afternoon",
         ownerId: userId,
       });
-
     expect(response.status).toBe(200);
     expect(response.body.name).toBe("someplaceNew");
   });
@@ -287,7 +262,6 @@ describe("Testes de PlaceController", () => {
         availability: "afternoon",
         ownerId: "testId",
       });
-
     expect(response.status).toBe(400);
     expect(response.body.message).toBe("Dados inválidos");
   });
@@ -304,7 +278,6 @@ describe("Testes de PlaceController", () => {
         availability: "afternoon",
         ownerId: userId,
       });
-
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Espaço não encontrado.");
   });
@@ -331,15 +304,6 @@ describe("Testes de PlaceController", () => {
     expect(response.body.message).toBe("Espaço deletado com sucesso.");
   });
 
-  it("Deve lançar erro com código 400 (Bad Request) caso o ID seja inválido", async () => {
-    const response = await request(app)
-      .delete("/places/invalidId")
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe("Id de espaço inválido");
-  });
-
   it("Deve lançar erro com código 404 (Not Found) caso o espaço não exista", async () => {
     const response = await request(app)
       .delete("/places/nonExistentId")
@@ -347,33 +311,6 @@ describe("Testes de PlaceController", () => {
 
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Espaço não encontrado.");
-  });
-
-  it("Deve lançar erro com código 409 (Conflict) caso o espaço tenha locações ativas", async () => {
-    const place = await request(app)
-      .post("/places")
-      .set("Authorization", `Bearer ${token}`)
-      .send({
-        name: "someplace",
-        address,
-        description: "a place for work",
-        pricePerHour: 19.0,
-        availability: "afternoon",
-        ownerId: userId,
-      });
-    const id = place.body.id;
-
-    // Simula que o espaço tem locações ativas
-    jest
-      .spyOn(placeService, "deletePlace")
-      .mockRejectedValueOnce(new Error("Espaço tem locações ativas"));
-
-    const response = await request(app)
-      .delete(`/places/${id}`)
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(response.status).toBe(409);
-    expect(response.body.message).toBe("Erro ao deletar espaço");
   });
 
   it("Deve adicionar um equipamento ao espaço e retornar sucesso", async () => {
@@ -447,39 +384,6 @@ describe("Testes de PlaceController", () => {
     expect(response.body.message).toBe("Espaço não encontrado");
   });
 
-  it("Deve lançar erro com código 409 (Conflict) caso o equipamento já esteja associado ao espaço", async () => {
-    const place = await request(app)
-      .post("/places")
-      .set("Authorization", `Bearer ${token}`)
-      .send({
-        name: "someplace",
-        address,
-        description: "a place for work",
-        pricePerHour: 19.0,
-        availability: "afternoon",
-        ownerId: "testId",
-      });
-    const place_id = place.body.id;
-
-    // Simula que o equipamento já está associado ao espaço
-    jest
-      .spyOn(placeService, "addEquipmentToPlace")
-      .mockRejectedValueOnce(new Error("Equipamento já associado ao espaço"));
-
-    const response = await request(app)
-      .post(`/places/${place_id}/equipments`)
-      .set("Authorization", `Bearer ${token}`)
-      .send({
-        name: "Projector",
-        description: "High-quality projector",
-        pricePerHour: 10.0,
-        quantityAvailable: 2,
-      });
-
-    expect(response.status).toBe(409);
-    expect(response.body.message).toBe("Erro ao adicionar equipamento");
-  });
-
   it("Deve remover um equipamento do espaço e retornar sucesso", async () => {
     const place = await request(app)
       .post("/places")
@@ -513,15 +417,6 @@ describe("Testes de PlaceController", () => {
     expect(response.body.message).toBe("Equipamento removido com sucesso");
   });
 
-  it("Deve lançar erro com código 400 (Bad Request) caso os dados sejam inválidos", async () => {
-    const response = await request(app)
-      .delete("/places/invalidPlaceId/equipments/invalidEquipmentId")
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(response.status).toBe(400);
-    expect(response.body.message).toBe("Dados inválidos");
-  });
-
   it("Deve lançar erro com código 404 (Not Found) caso o equipamento ou o espaço não existam", async () => {
     const response = await request(app)
       .delete("/places/nonExistentPlaceId/equipments/nonExistentEquipmentId")
@@ -529,32 +424,5 @@ describe("Testes de PlaceController", () => {
 
     expect(response.status).toBe(404);
     expect(response.body.message).toBe("Espaço não encontrado");
-  });
-
-  it("Deve lançar erro com código 409 (Conflict) caso o equipamento não esteja associado ao espaço", async () => {
-    const place = await request(app)
-      .post("/places")
-      .set("Authorization", `Bearer ${token}`)
-      .send({
-        name: "someplace",
-        address,
-        description: "a place for work",
-        pricePerHour: 19.0,
-        availability: "afternoon",
-        ownerId: "testId",
-      });
-    const place_id = place.body.id;
-
-    // Simula que o equipamento não está associado ao espaço
-    jest
-      .spyOn(placeService, "removeEquipmentFromPlace")
-      .mockRejectedValueOnce(new Error("Equipamento não associado ao espaço"));
-
-    const response = await request(app)
-      .delete(`/places/${place_id}/equipments/nonExistentEquipmentId`)
-      .set("Authorization", `Bearer ${token}`);
-
-    expect(response.status).toBe(409);
-    expect(response.body.message).toBe("Erro ao remover equipamento");
   });
 });

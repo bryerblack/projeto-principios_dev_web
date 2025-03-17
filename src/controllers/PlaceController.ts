@@ -36,6 +36,12 @@ export class PlaceController {
       res.status(201).json(place);
       return;
     } catch (error: any) {
+      if (error.message === "Endereço já cadastrado.") {
+        res
+          .status(409)
+          .json({ message: "Endereço já cadastrado.", error: error.message });
+        return;
+      }
       res
         .status(500)
         .json({ message: "Erro ao criar espaço", error: error.message });
@@ -63,7 +69,6 @@ export class PlaceController {
   async getPlaceById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-
       if (!id) {
         res.status(400).json({ message: "Id de espaço inválido" });
         return;
@@ -143,9 +148,9 @@ export class PlaceController {
       }
 
       const places = await placeService.getPlacesByOwner(userId);
-
+  
       if (!places || places.length === 0) {
-        res.status(204).json({ message: "Nenhum espaço cadastrado." });
+        res.status(204).send();
         return;
       }
 
