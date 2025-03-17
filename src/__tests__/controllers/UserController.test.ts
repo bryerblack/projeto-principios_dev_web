@@ -15,7 +15,7 @@ describe("Testes da UserController", () => {
     const adminResponse = await request(app).post("/auth/register").send({
       name: "Admin User",
       email: "admin@example.com",
-      password: "admin123",
+      password: "Admin123#",
       phone: "(11) 98765-4321",
       profession: "Administrador",
       role: "admin",
@@ -26,7 +26,7 @@ describe("Testes da UserController", () => {
     // 🔹 Autenticar o admin e obter o token
     const loginResponse = await request(app).post("/auth/login").send({
       email: "admin@example.com",
-      password: "admin123",
+      password: "Admin123#",
     });
 
     adminToken = loginResponse.body.token;

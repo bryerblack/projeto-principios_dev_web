@@ -24,7 +24,7 @@ describe("Testes de RentController", () => {
     const ownerResponse = await request(app).post("/auth/register").send({
       name: "Proprietário Teste",
       email: "owner@example.com",
-      password: "senha123",
+      password: "Senha123#",
       phone: "(11) 98765-4321",
       profession: "Empresário",
       role: "user",
@@ -33,7 +33,7 @@ describe("Testes de RentController", () => {
     const renterResponse = await request(app).post("/auth/register").send({
       name: "Locatário Teste",
       email: "renter@example.com",
-      password: "senha123",
+      password: "Senha123#",
       phone: "(11) 91234-5678",
       profession: "Arquiteto",
       role: "user",
@@ -59,7 +59,7 @@ describe("Testes de RentController", () => {
     // 🔹 Autenticar o proprietário e obter o token
     const loginResponse = await request(app).post("/auth/login").send({
       email: "owner@example.com",
-      password: "senha123",
+      password: "Senha123#",
     });
 
     token = loginResponse.body.token;
