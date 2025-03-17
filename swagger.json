@@ -467,7 +467,7 @@
       }
     },
     "/rents/{id}/cancel": {
-      "delete": {
+      "put": {
         "summary": "Cancelar uma locação pendente",
         "tags": ["Locações"],
         "security": [{ "BearerAuth": [] }],
