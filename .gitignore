@@ -45,4 +45,5 @@ containers/
 volumes/
 mysql_data/
 
-# 🔹 
+# Testes🔹 
+coverage/

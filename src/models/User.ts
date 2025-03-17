@@ -1,8 +1,5 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/database";
-import Place from "./Place";
-import Rent from "./Rent";
-import Rating from "./Rating";
 import bcrypt from "bcryptjs";
 
 export class User extends Model {
@@ -56,7 +53,7 @@ User.init(
     role: {
       type: DataTypes.ENUM("admin", "user"),
       allowNull: false,
-      defaultValue: "user", 
+      defaultValue: "user",
     },
   },
   {
@@ -70,10 +67,5 @@ User.init(
     },
   }
 );
-
-// Relacionamentos
-User.hasMany(Place, { foreignKey: "ownerId" });
-User.hasMany(Rent, { foreignKey: "renterId" });
-User.hasMany(Rating, { foreignKey: "reviewedId" });
 
 export default User;

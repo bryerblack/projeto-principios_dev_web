@@ -1,7 +1,13 @@
 import Equipment from "../models/Equipment";
 
 export class EquipmentRepository {
-  async createEquipment(data: { name: string; description?: string; pricePerHour: number; quantityAvailable: number; place_id: string }) {
+  async createEquipment(data: {
+    name: string;
+    description?: string;
+    pricePerHour: number;
+    quantityAvailable: number;
+    place_id: string;
+  }) {
     return await Equipment.create(data);
   }
 
@@ -11,6 +17,15 @@ export class EquipmentRepository {
 
   async getEquipmentById(id: string) {
     return await Equipment.findByPk(id);
+  }
+
+  async findByPlaceAndName(place_id: string, name: string) {
+    return await Equipment.findOne({
+      where: {
+        placeId: place_id,
+        name: name,
+      },
+    });
   }
 
   async updateEquipment(id: string, data: Partial<Equipment>) {

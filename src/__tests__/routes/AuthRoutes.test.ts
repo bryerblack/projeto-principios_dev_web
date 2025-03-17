@@ -2,6 +2,20 @@ import request from "supertest";
 import app from "../../server";
 
 describe("Autenticação", () => {
+  it("Deve registrar um usuário", async () => {
+    const response = await request(app).post("/auth/register").send({
+      name: "Usuário Teste",
+      email: "teste@email.com",
+      password: "senha123",
+      phone: "(11) 98765-4321",
+      profession: "Médico",
+    });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty("token");
+    expect(response.body).toHaveProperty("user");
+  });
+
   it("Deve autenticar um usuário e retornar um token", async () => {
     await request(app).post("/users").send({
       name: "Usuário Teste",

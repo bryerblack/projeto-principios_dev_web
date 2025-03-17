@@ -61,15 +61,17 @@ export class RentRepository {
 
   async updateRent(
     id: string,
-    data: Partial<Rent> & { schedules?: { startDate: string; endDate: string }[] }
+    data: Partial<Rent> & {
+      schedules?: { startDate: string; endDate: string }[];
+    }
   ) {
     const rent = await Rent.findByPk(id);
     if (!rent) return null;
-  
+
     return await Rent.sequelize!.transaction(async (transaction) => {
       // Atualiza os dados da locação
       await rent.update(data, { transaction });
-  
+
       // Se houver horários na atualização, precisamos atualizar RentSchedule
       if (data.schedules) {
         // Remove os horários antigos
@@ -77,18 +79,27 @@ export class RentRepository {
           where: { rentId: id },
           transaction,
         });
-  
+
         // Cria os novos horários
         const schedules = data.schedules.map((schedule) => ({
           rentId: id,
           startDate: new Date(schedule.startDate),
           endDate: new Date(schedule.endDate),
         }));
-  
+
         await RentSchedule.bulkCreate(schedules, { transaction });
       }
-  
+
       return rent;
+    });
+  }
+
+  async getActiveRentsByPlace(place_id: string) {
+    return await Rent.findAll({
+      where: {
+        placeId: place_id,
+        status: "confirmado", // Supondo que haja um campo `status` para indicar locações ativas
+      },
     });
   }
 
