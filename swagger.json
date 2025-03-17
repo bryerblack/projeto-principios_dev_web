@@ -255,7 +255,7 @@
         }
       }
     },
-    "/rents": {
+    "/rents/request": {
       "post": {
         "summary": "Solicitar uma nova locação",
         "tags": ["Locações"],
@@ -265,63 +265,48 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "required": ["placeId", "schedules"],
-                "properties": {
-                  "placeId": {
-                    "type": "string",
-                    "format": "uuid",
-                    "description": "ID do espaço a ser alugado"
-                  },
-                  "schedules": {
-                    "type": "array",
-                    "items": {
-                      "type": "object",
-                      "required": ["startDate", "endDate"],
-                      "properties": {
-                        "startDate": {
-                          "type": "string",
-                          "format": "date-time",
-                          "description": "Data e hora de início do aluguel"
-                        },
-                        "endDate": {
-                          "type": "string",
-                          "format": "date-time",
-                          "description": "Data e hora de término do aluguel"
-                        }
-                      }
-                    }
-                  }
-                }
+                "$ref": "#/components/schemas/RentRequest"
               }
             }
           }
         },
         "responses": {
-          "201": { "description": "Locação criada com sucesso" },
-          "400": { "description": "Dados inválidos ou horários ausentes" },
+          "201": { "description": "Locação solicitada com sucesso" },
+          "400": { "description": "Dados inválidos" },
           "404": { "description": "Espaço não encontrado" },
-          "500": { "description": "Erro ao criar locação" }
+          "500": { "description": "Erro ao solicitar locação" }
         }
-      },
-      "get": {
-        "summary": "Listar todas as locações (Apenas Admin)",
+      }
+    },
+    "/rents/{id}/approve": {
+      "put": {
+        "summary": "Aprovar ou rejeitar uma solicitação de locação",
         "tags": ["Locações"],
         "security": [{ "BearerAuth": [] }],
-        "responses": {
-          "200": {
-            "description": "Lista de locações registradas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Rent" }
-                }
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RentApproval"
               }
             }
-          },
-          "403": { "description": "Acesso negado" },
-          "500": { "description": "Erro interno no servidor" }
+          }
+        },
+        "responses": {
+          "200": { "description": "Locação aprovada/rejeitada com sucesso" },
+          "400": { "description": "Status inválido" },
+          "403": { "description": "Permissão negada" },
+          "404": { "description": "Locação não encontrada" },
+          "500": { "description": "Erro ao processar locação" }
         }
       }
     },
@@ -331,138 +316,8 @@
         "tags": ["Locações"],
         "security": [{ "BearerAuth": [] }],
         "responses": {
-          "200": {
-            "description": "Lista de locações do usuário autenticado",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Rent" }
-                }
-              }
-            }
-          },
+          "200": { "description": "Lista de locações do usuário" },
           "500": { "description": "Erro ao obter locações" }
-        }
-      }
-    },
-    "/rents/{id}": {
-      "get": {
-        "summary": "Buscar locação por ID (Apenas Admin)",
-        "tags": ["Locações"],
-        "security": [{ "BearerAuth": [] }],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "format": "uuid" }
-          }
-        ],
-        "responses": {
-          "200": { "description": "Locação encontrada" },
-          "403": { "description": "Acesso negado" },
-          "404": { "description": "Locação não encontrada" },
-          "500": { "description": "Erro interno no servidor" }
-        }
-      },
-      "put": {
-        "summary": "Atualizar uma locação",
-        "tags": ["Locações"],
-        "security": [{ "BearerAuth": [] }],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "format": "uuid" }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "properties": {
-                  "totalValue": {
-                    "type": "number",
-                    "description": "Novo valor total do aluguel"
-                  },
-                  "status": {
-                    "type": "string",
-                    "enum": ["pending", "approved", "rejected"],
-                    "description": "Novo status da locação"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Locação atualizada com sucesso" },
-          "403": { "description": "Acesso negado" },
-          "404": { "description": "Locação não encontrada" },
-          "500": { "description": "Erro ao atualizar locação" }
-        }
-      },
-      "delete": {
-        "summary": "Deletar uma locação",
-        "tags": ["Locações"],
-        "security": [{ "BearerAuth": [] }],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "format": "uuid" }
-          }
-        ],
-        "responses": {
-          "200": { "description": "Locação deletada com sucesso" },
-          "403": { "description": "Permissão negada" },
-          "404": { "description": "Locação não encontrada" },
-          "500": { "description": "Erro ao deletar locação" }
-        }
-      }
-    },
-    "/rents/{id}/approve": {
-      "put": {
-        "summary": "Aprovar ou rejeitar uma locação",
-        "tags": ["Locações"],
-        "security": [{ "BearerAuth": [] }],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string", "format": "uuid" }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "type": "object",
-                "required": ["status"],
-                "properties": {
-                  "status": {
-                    "type": "string",
-                    "enum": ["approved", "rejected"],
-                    "description": "Status da locação"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": { "description": "Locação aprovada ou rejeitada com sucesso" },
-          "400": { "description": "Status inválido" },
-          "403": { "description": "Permissão negada" },
-          "404": { "description": "Locação não encontrada" },
-          "500": { "description": "Erro ao processar locação" }
         }
       }
     },
@@ -488,124 +343,153 @@
         }
       }
     },
-    "/places/{place_id}/equipments": {
+    "/rents": {
       "post": {
-        "summary": "Adicionar equipamento a um espaço",
-        "tags": ["Espaços"],
-        "parameters": [
-          {
-            "name": "place_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "201": { "description": "Equipamento adicionado com sucesso" },
-          "400": { "description": "Erro ao adicionar equipamento" }
-        }
-      }
-    },
-    "/places/{place_id}/equipments/{equipmentId}": {
-      "delete": {
-        "summary": "Remover equipamento de um espaço",
-        "tags": ["Espaços"],
-        "parameters": [
-          {
-            "name": "place_id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          },
-          {
-            "name": "equipmentId",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" }
-          }
-        ],
-        "responses": {
-          "200": { "description": "Equipamento removido com sucesso" },
-          "404": { "description": "Equipamento não encontrado" }
-        }
-      }
-    },
-    "/ratings": {
-      "post": {
-        "summary": "Criar uma nova avaliação",
-        "tags": ["Avaliações"],
+        "summary": "Criar uma nova locação",
+        "tags": ["Locações"],
+        "security": [{ "BearerAuth": [] }],
         "requestBody": {
           "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/Rent" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Locação criada com sucesso" },
+          "400": { "description": "Erro ao criar locação" }
+        }
+      },
+      "get": {
+        "summary": "Listar todas as locações (Apenas Admins)",
+        "tags": ["Locações"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": {
+          "200": { "description": "Lista de locações registradas" },
+          "403": { "description": "Acesso negado" },
+          "500": { "description": "Erro interno" }
+        }
+      }
+    }
+  },
+  "/places/{place_id}/equipments": {
+    "post": {
+      "summary": "Adicionar equipamento a um espaço",
+      "tags": ["Espaços"],
+      "parameters": [
+        {
+          "name": "place_id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "responses": {
+        "201": { "description": "Equipamento adicionado com sucesso" },
+        "400": { "description": "Erro ao adicionar equipamento" }
+      }
+    }
+  },
+  "/places/{place_id}/equipments/{equipmentId}": {
+    "delete": {
+      "summary": "Remover equipamento de um espaço",
+      "tags": ["Espaços"],
+      "parameters": [
+        {
+          "name": "place_id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" }
+        },
+        {
+          "name": "equipmentId",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "responses": {
+        "200": { "description": "Equipamento removido com sucesso" },
+        "404": { "description": "Equipamento não encontrado" }
+      }
+    }
+  },
+  "/ratings": {
+    "post": {
+      "summary": "Criar uma nova avaliação",
+      "tags": ["Avaliações"],
+      "requestBody": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Rating" }
+          }
+        }
+      },
+      "responses": {
+        "201": { "description": "Avaliação criada com sucesso" },
+        "400": { "description": "Erro ao criar avaliação" }
+      }
+    },
+    "get": {
+      "summary": "Listar todas as avaliações",
+      "tags": ["Avaliações"],
+      "responses": {
+        "200": {
+          "description": "Lista de avaliações registradas",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Rating" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "/ratings/{id}": {
+    "get": {
+      "summary": "Buscar avaliação por ID",
+      "tags": ["Avaliações"],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "example": "c7f6a9d8-b3e2-4f19-8a56-92d71e37a9f1"
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Avaliação encontrada",
           "content": {
             "application/json": {
               "schema": { "$ref": "#/components/schemas/Rating" }
             }
           }
         },
-        "responses": {
-          "201": { "description": "Avaliação criada com sucesso" },
-          "400": { "description": "Erro ao criar avaliação" }
-        }
-      },
-      "get": {
-        "summary": "Listar todas as avaliações",
-        "tags": ["Avaliações"],
-        "responses": {
-          "200": {
-            "description": "Lista de avaliações registradas",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": { "$ref": "#/components/schemas/Rating" }
-                }
-              }
-            }
-          }
-        }
+        "404": { "description": "Avaliação não encontrada" }
       }
     },
-    "/ratings/{id}": {
-      "get": {
-        "summary": "Buscar avaliação por ID",
-        "tags": ["Avaliações"],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" },
-            "example": "c7f6a9d8-b3e2-4f19-8a56-92d71e37a9f1"
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Avaliação encontrada",
-            "content": {
-              "application/json": {
-                "schema": { "$ref": "#/components/schemas/Rating" }
-              }
-            }
-          },
-          "404": { "description": "Avaliação não encontrada" }
+    "delete": {
+      "summary": "Deletar avaliação por ID",
+      "tags": ["Avaliações"],
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" },
+          "example": "c7f6a9d8-b3e2-4f19-8a56-92d71e37a9f1"
         }
-      },
-      "delete": {
-        "summary": "Deletar avaliação por ID",
-        "tags": ["Avaliações"],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": { "type": "string" },
-            "example": "c7f6a9d8-b3e2-4f19-8a56-92d71e37a9f1"
-          }
-        ],
-        "responses": {
-          "200": { "description": "Avaliação deletada com sucesso" },
-          "404": { "description": "Avaliação não encontrada" }
-        }
+      ],
+      "responses": {
+        "200": { "description": "Avaliação deletada com sucesso" },
+        "404": { "description": "Avaliação não encontrada" }
       }
     }
   },
@@ -661,26 +545,48 @@
       "Rent": {
         "type": "object",
         "properties": {
-          "id": {
+          "id": { "type": "string", "format": "uuid" },
+          "placeId": { "type": "string", "format": "uuid" },
+          "ownerId": { "type": "string", "format": "uuid" },
+          "renterId": { "type": "string", "format": "uuid" },
+          "totalValue": { "type": "number" },
+          "status": {
             "type": "string",
-            "example": "a1b2c3d4-e5f6-7890-1234-56789abcdef0"
+            "enum": ["pending", "approved", "rejected", "cancelled"]
           },
-          "placeId": {
-            "type": "string",
-            "example": "5d4a7f16-b2a3-4e19-9cb5-d6b7a8e2f471"
-          },
-          "ownerId": {
-            "type": "string",
-            "example": "123e4567-e89b-12d3-a456-426614174000"
-          },
-          "renterId": {
-            "type": "string",
-            "example": "123e4567-e89b-12d3-a456-426614174000"
-          },
-          "totalValue": { "type": "number", "example": 450.0 },
-          "dateTimes": { "type": "object", "example": {} },
-          "status": { "type": "string", "example": "pending" },
-          "paymentMethod": { "type": "string", "example": "pix" }
+          "paymentMethod": { "type": "string" },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "startDate": { "type": "string", "format": "date-time" },
+                "endDate": { "type": "string", "format": "date-time" }
+              }
+            }
+          }
+        }
+      },
+      "RentRequest": {
+        "type": "object",
+        "properties": {
+          "placeId": { "type": "string", "format": "uuid" },
+          "schedules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "startDate": { "type": "string", "format": "date-time" },
+                "endDate": { "type": "string", "format": "date-time" }
+              }
+            }
+          }
+        }
+      },
+      "RentApproval": {
+        "type": "object",
+        "properties": {
+          "status": { "type": "string", "enum": ["approved", "rejected"] }
         }
       },
       "Rating": {
