@@ -101,26 +101,18 @@ export class PlaceController {
       const { id } = req.params;
       const { name, address, description, pricePerHour, availability } =
         req.body;
-
-      if (
-        !id ||
-        !name ||
-        !address ||
-        !description ||
-        !pricePerHour ||
-        !availability
-      ) {
+      if (!req.body) {
         res.status(400).json({ message: "Dados inválidos" });
         return;
       }
 
-      const place = await placeService.getPlaceById(id);
+      const place = await placeService.getPlacesByOwner(userId);
       if (!place) {
         res.status(404).json({ message: "Espaço não encontrado." });
         return;
       }
 
-      if (place.ownerId !== userId) {
+      if (place[0].ownerId !== userId) {
         res
           .status(403)
           .json({ message: "Você não tem permissão para editar este espaço." });
@@ -128,6 +120,7 @@ export class PlaceController {
       }
 
       const updatedPlace = await placeService.updatePlace(id, req.body);
+      console.log(updatedPlace)
       res.status(200).json(updatedPlace);
       return;
     } catch (error: any) {
@@ -148,7 +141,7 @@ export class PlaceController {
       }
 
       const places = await placeService.getPlacesByOwner(userId);
-  
+
       if (!places || places.length === 0) {
         res.status(204).send();
         return;

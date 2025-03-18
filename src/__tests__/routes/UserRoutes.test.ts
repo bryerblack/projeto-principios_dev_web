@@ -9,7 +9,7 @@ describe("Usuários", () => {
     const adminResponse = await request(app).post("/auth/register").send({
       name: "Admin Teste",
       email: "admin@email.com",
-      password: "admin123",
+      password: "Admin123#",
       phone: "(11) 98765-4321",
       profession: "Admin",
       role: "admin",
@@ -25,7 +25,7 @@ describe("Usuários", () => {
       .send({
         name: "Usuário Teste",
         email: "usuario@email.com",
-        password: "senha123",
+        password: "Senha123#",
         phone: "(11) 99999-8888",
         profession: "Engenheiro",
       });

@@ -6,7 +6,7 @@ describe("Autenticação", () => {
     const response = await request(app).post("/auth/register").send({
       name: "Usuário Teste",
       email: "teste@email.com",
-      password: "senha123",
+      password: "Senha123#",
       phone: "(11) 98765-4321",
       profession: "Médico",
     });
@@ -20,14 +20,14 @@ describe("Autenticação", () => {
     await request(app).post("/users").send({
       name: "Usuário Teste",
       email: "teste@email.com",
-      password: "senha123",
+      password: "Senha123#",
       phone: "(11) 98765-4321",
       profession: "Médico",
     });
 
     const response = await request(app).post("/auth/login").send({
       email: "teste@email.com",
-      password: "senha123",
+      password: "Senha123#",
     });
 
     expect(response.status).toBe(200);
@@ -37,7 +37,7 @@ describe("Autenticação", () => {
   it("Deve retornar erro ao autenticar com senha errada", async () => {
     const response = await request(app).post("/auth/login").send({
       email: "teste@email.com",
-      password: "senhaErrada",
+      password: "senhaErrada#1",
     });
 
     expect(response.status).toBe(401);
