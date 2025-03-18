@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { RentService } from "../services/RentService";
 import { AuthenticatedRequest } from "../types/AuthenticatedRequest";
 import { PlaceService } from "../services/PlaceService";
+import { HttpError } from "../errors/HttpError";
 
 const rentService = new RentService();
 const placeService = new PlaceService();
@@ -40,9 +41,8 @@ export class RentController {
       res.status(201).json(rent);
       return;
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao criar locação", error: error.message });
+      const status = error instanceof HttpError ? error.statusCode : 500;
+      res.status(status).json({ message: error.message });
       return;
     }
   }
@@ -54,9 +54,8 @@ export class RentController {
       res.json(rents);
       return;
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao obter locações", error: error.message });
+      const status = error instanceof HttpError ? error.statusCode : 500;
+      res.status(status).json({ message: error.message });
       return;
     }
   }
@@ -74,9 +73,8 @@ export class RentController {
 
       res.json(rent);
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao obter locação", error: error.message });
+      const status = error instanceof HttpError ? error.statusCode : 500;
+      res.status(status).json({ message: error.message });
       return;
     }
   }
@@ -94,9 +92,8 @@ export class RentController {
 
       res.json(updatedRent);
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao atualizar locação", error: error.message });
+      const status = error instanceof HttpError ? error.statusCode : 500;
+      res.status(status).json({ message: error.message });
       return;
     }
   }
@@ -109,9 +106,8 @@ export class RentController {
       res.json({ message: "Locação deletada com sucesso" });
       return;
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao deletar locação", error: error.message });
+      const status = error instanceof HttpError ? error.statusCode : 500;
+      res.status(status).json({ message: error.message });
       return;
     }
   }
@@ -170,9 +166,8 @@ export class RentController {
       res.status(201).json(rent);
       return;
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao solicitar aluguel", error: error.message });
+      const status = error instanceof HttpError ? error.statusCode : 500;
+      res.status(status).json({ message: error.message });
       return;
     }
   }
@@ -213,9 +208,8 @@ export class RentController {
       });
       return;
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao processar locação", error: error.message });
+      const status = error instanceof HttpError ? error.statusCode : 500;
+      res.status(status).json({ message: error.message });
       return;
     }
   }
@@ -227,9 +221,8 @@ export class RentController {
       res.json(rents);
       return;
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao obter locações", error: error.message });
+      const status = error instanceof HttpError ? error.statusCode : 500;
+      res.status(status).json({ message: error.message });
       return;
     }
   }
@@ -258,14 +251,13 @@ export class RentController {
         return;
       }
 
-      await rentService.deleteRent(id);
+      await rentService.cancelRent(id, req.user.id);
 
-      res.json({ message: "Locação cancelada com sucesso." });
+      res.status(200).json({ message: "Locação cancelada com sucesso." });
       return;
     } catch (error: any) {
-      res
-        .status(500)
-        .json({ message: "Erro ao cancelar locação", error: error.message });
+      const status = error instanceof HttpError ? error.statusCode : 500;
+      res.status(status).json({ message: error.message });
       return;
     }
   }

@@ -10,6 +10,8 @@ describe("Testes de PlaceController", () => {
   let userId: string;
   let address: Address;
   let address2: Address;
+  let placeId: string;
+  let place2Id: string;
   const addressRepository = new AddressRepository();
 
   beforeAll(async () => {
@@ -43,18 +45,17 @@ describe("Testes de PlaceController", () => {
     const userResponse = await request(app).post("/auth/register").send({
       name: "Usuário Teste",
       email: "test@example.com",
-      password: "senha123",
+      password: "Senha123#",
       phone: "(11) 98765-4321",
       profession: "Engenheiro",
       role: "admin",
     });
-
     userId = userResponse.body.user.id;
 
     // 🔹 Autenticar o usuário e obter o token
     const loginResponse = await request(app).post("/auth/login").send({
       email: "test@example.com",
-      password: "senha123",
+      password: "Senha123#",
     });
 
     token = loginResponse.body.token;
@@ -84,7 +85,7 @@ describe("Testes de PlaceController", () => {
         availability: "afternoon",
         ownerId: userId,
       });
-
+    placeId = response.body.id;
     expect(response.status).toBe(201);
     expect(response.body).toHaveProperty("id");
     expect(response.body.ownerId).toBe(userId);
@@ -149,7 +150,7 @@ describe("Testes de PlaceController", () => {
         ownerId: userId,
       });
 
-    await request(app)
+    const aux = await request(app)
       .post("/places")
       .set("Authorization", `Bearer ${token}`)
       .send({
@@ -160,6 +161,7 @@ describe("Testes de PlaceController", () => {
         availability: "night",
         ownerId: userId,
       });
+    place2Id = aux.body.id;
 
     const response = await request(app)
       .get("/places/own")
@@ -170,11 +172,16 @@ describe("Testes de PlaceController", () => {
   });
 
   it("Deve retornar código 204 (No Content) caso não existam espaços cadastrados.", async () => {
+    await request(app)
+      .delete(`/places/${placeId}`)
+      .set("Authorization", `Bearer ${token}`);
+    await request(app)
+      .delete(`/places/${place2Id}`)
+      .set("Authorization", `Bearer ${token}`);
     const response = await request(app)
       .get("/places/own")
       .set("Authorization", `Bearer ${token}`);
-    console.log(response.status);
-    console.log(response.body);
+
     expect(response.status).toBe(204);
   });
 
@@ -234,6 +241,7 @@ describe("Testes de PlaceController", () => {
         availability: "afternoon",
         ownerId: userId,
       });
+    console.log(response.body);
     expect(response.status).toBe(200);
     expect(response.body.name).toBe("someplaceNew");
   });

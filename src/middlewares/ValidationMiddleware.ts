@@ -16,11 +16,14 @@ const validateUser = (req: Request, res: Response, next: NextFunction) => {
     return;
   }
 
-  if (!password || password.length < 6) {
+  const passwordRegex =
+    /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[$*&@!#])[0-9a-zA-Z$*&@#]{8,}$/;
+
+  if (!password || !passwordRegex.test(password)) {
     res.status(400).json({
       error: {
         message:
-          "O campo 'password' é obrigatório e deve ter pelo menos 6 caracteres.",
+          "O campo 'password' deve ter pelo menos 8 caracteres, incluindo ao menos uma letra maiúscula, uma minúscula, um número e um caractere especial ($*&@!#).",
         field: "password",
         code: "INVALID_PASSWORD",
       },

@@ -37,7 +37,7 @@ router.delete("/:id", authMiddleware, (req, res) =>
 );
 
 // 🔹 Usuário pode cancelar um aluguel próprio pendente
-router.delete("/:id/cancel", authMiddleware, (req, res) =>
+router.put("/:id/cancel", authMiddleware, (req, res) =>
   rentController.cancelRent(req, res)
 );
 

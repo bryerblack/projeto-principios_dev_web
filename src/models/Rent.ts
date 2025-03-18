@@ -11,6 +11,7 @@ export class Rent extends Model {
   public totalValue!: number;
   public status!: string;
   public paymentMethod!: string;
+  public schedules!: [{ startDate: string, endDate: string}]
 }
 
 Rent.init(

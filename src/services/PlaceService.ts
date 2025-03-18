@@ -3,6 +3,7 @@ import { EquipmentRepository } from "../repositories/EquipmentRepository";
 import Address from "../models/Address";
 import { AddressRepository } from "../repositories/AddressRepository";
 import { RentRepository } from "../repositories/RentRepository";
+import { HttpError } from "../errors/HttpError";
 
 const placeRepository = new PlaceRepository();
 const equipmentRepository = new EquipmentRepository();
@@ -41,7 +42,7 @@ export class PlaceService {
         existingAddress.id
       );
       if (existingPlace) {
-        throw new Error("Endereço já cadastrado.");
+        throw new HttpError("Endereço já cadastrado.", 409);
       }
     }
 
@@ -90,13 +91,13 @@ export class PlaceService {
     const place = await placeRepository.getPlaceById(id);
   
     if (!place) {
-      throw new Error("Espaço não encontrado.");
+      throw new HttpError("Espaço não encontrado.", 404);
     }
   
     // 🔹 Verifica se há locações ativas antes de excluir
     const activeRents = await rentRepository.getActiveRentsByPlace(id);
     if (activeRents.length > 0) {
-      throw new Error("Espaço tem locações ativas");
+      throw new HttpError("Espaço tem locações ativas", 409);
     }
   
     await placeRepository.deletePlace(id);
@@ -118,7 +119,7 @@ export class PlaceService {
     );
 
     if (existingEquipment) {
-      throw new Error("Equipamento já associado ao espaço");
+      throw new HttpError("Equipamento já associado ao espaço", 409);
     }
 
     return await equipmentRepository.createEquipment({ ...data, place_id });

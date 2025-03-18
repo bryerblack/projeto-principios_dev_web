@@ -94,6 +94,10 @@ export class RentRepository {
     });
   }
 
+  async updateRentStatus(rentId: string, status: string) {
+    return await Rent.update({ status }, { where: { id: rentId } });
+  }
+
   async getActiveRentsByPlace(place_id: string) {
     return await Rent.findAll({
       where: {

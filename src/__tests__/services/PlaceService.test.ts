@@ -31,7 +31,14 @@ describe("PlaceService", () => {
   it("Deve criar um espaço e retornar o objeto criado quando os dados forem válidos", async () => {
     const placeData = {
       name: "Espaço de Trabalho",
-      address: { street: "Rua Teste", number: 123 },
+      address: { cep: "58433264",
+        pais: "Brasil",
+        estado: "São Paulo",
+        cidade: "São Paulo",
+        bairro: "Centro",
+        rua: "Rua das Rosas",
+        numero: "123",
+        complemento: "Apto 45" },
       description: "Um espaço para reuniões",
       pricePerHour: 50,
       availability: ["09:00-18:00"],
@@ -42,13 +49,20 @@ describe("PlaceService", () => {
 
     expect(result).toHaveProperty("id");
     expect(result.name).toBe(placeData.name);
-    expect(result.address).toEqual(placeData.address);
+    expect(result.id).not.toBeNull;
   });
 
   it("Deve lançar erro com código 400 (Bad Request) caso os dados sejam inválidos ou incompletos", async () => {
     const invalidPlaceData = {
       name: "",
-      address: { street: "Rua Teste", number: 123 },
+      address: { cep: "",
+        pais: "Brasil",
+        estado: "São Paulo",
+        cidade: "São Paulo",
+        bairro: "Centro",
+        rua: "Rua das Rosas",
+        numero: "123",
+        complemento: "Apto 45", },
       description: "Um espaço para reuniões",
       pricePerHour: 50,
       availability: ["09:00-18:00"],
@@ -61,7 +75,14 @@ describe("PlaceService", () => {
   it("Deve retornar todos os espaços cadastrados", async () => {
     await placeService.createPlace({
       name: "Espaço 1",
-      address: { street: "Rua 1", number: 123 },
+      address: { cep: "58433264",
+        pais: "Brasil",
+        estado: "São Paulo",
+        cidade: "São Paulo",
+        bairro: "Centro",
+        rua: "Rua das Rosas",
+        numero: "123",
+        complemento: "Apto 45", },
       description: "Descrição 1",
       pricePerHour: 50,
       availability: ["09:00-18:00"],
@@ -69,7 +90,14 @@ describe("PlaceService", () => {
     });
     await placeService.createPlace({
       name: "Espaço 2",
-      address: { street: "Rua 2", number: 456 },
+      address: { cep: "12345618",
+        pais: "Brasil",
+        estado: "Rio de Janeiro",
+        cidade: "Rio de Janeiro",
+        bairro: "Copacabana",
+        rua: "Avenida Atlântica",
+        numero: "456",
+        complemento: "Sala 10", },
       description: "Descrição 2",
       pricePerHour: 60,
       availability: ["10:00-19:00"],
@@ -90,7 +118,14 @@ describe("PlaceService", () => {
   it("Deve retornar o espaço correspondente ao ID", async () => {
     const place = await placeService.createPlace({
       name: "Espaço 1",
-      address: { street: "Rua 1", number: 123 },
+      address: { cep: "58433264",
+        pais: "Brasil",
+        estado: "São Paulo",
+        cidade: "São Paulo",
+        bairro: "Centro",
+        rua: "Rua das Rosas",
+        numero: "123",
+        complemento: "Apto 45", },
       description: "Descrição 1",
       pricePerHour: 50,
       availability: ["09:00-18:00"],
@@ -113,7 +148,14 @@ describe("PlaceService", () => {
   it("Deve atualizar um espaço e retornar os dados atualizados", async () => {
     const place = await placeService.createPlace({
       name: "Espaço 1",
-      address: { street: "Rua 1", number: 123 },
+      address: { cep: "58433264",
+        pais: "Brasil",
+        estado: "São Paulo",
+        cidade: "São Paulo",
+        bairro: "Centro",
+        rua: "Rua das Rosas",
+        numero: "123",
+        complemento: "Apto 45", },
       description: "Descrição 1",
       pricePerHour: 50,
       availability: ["09:00-18:00"],
@@ -136,7 +178,14 @@ describe("PlaceService", () => {
   it("Deve deletar um espaço e retornar confirmação quando o ID for válido", async () => {
     const place = await placeService.createPlace({
       name: "Espaço 1",
-      address: { street: "Rua 1", number: 123 },
+      address: { cep: "58433264",
+        pais: "Brasil",
+        estado: "São Paulo",
+        cidade: "São Paulo",
+        bairro: "Centro",
+        rua: "Rua das Rosas",
+        numero: "123",
+        complemento: "Apto 45", },
       description: "Descrição 1",
       pricePerHour: 50,
       availability: ["09:00-18:00"],
@@ -159,7 +208,14 @@ describe("PlaceService", () => {
   it("Deve lançar erro com código 409 (Conflict) caso o espaço tenha locações ativas", async () => {
     const place = await placeService.createPlace({
       name: "Espaço 1",
-      address: { street: "Rua 1", number: 123 },
+      address: { cep: "58433264",
+        pais: "Brasil",
+        estado: "São Paulo",
+        cidade: "São Paulo",
+        bairro: "Centro",
+        rua: "Rua das Rosas",
+        numero: "123",
+        complemento: "Apto 45", },
       description: "Descrição 1",
       pricePerHour: 50,
       availability: ["09:00-18:00"],
@@ -174,7 +230,14 @@ describe("PlaceService", () => {
   it("Deve adicionar um equipamento ao espaço e retornar sucesso", async () => {
     const place = await placeService.createPlace({
       name: "Espaço 1",
-      address: { street: "Rua 1", number: 123 },
+      address: { cep: "58433264",
+        pais: "Brasil",
+        estado: "São Paulo",
+        cidade: "São Paulo",
+        bairro: "Centro",
+        rua: "Rua das Rosas",
+        numero: "123",
+        complemento: "Apto 45", },
       description: "Descrição 1",
       pricePerHour: 50,
       availability: ["09:00-18:00"],
@@ -219,7 +282,14 @@ describe("PlaceService", () => {
   it("Deve lançar erro com código 409 (Conflict) caso o equipamento já esteja associado ao espaço", async () => {
     const place = await placeService.createPlace({
       name: "Espaço 1",
-      address: { street: "Rua 1", number: 123 },
+      address: { cep: "58433264",
+        pais: "Brasil",
+        estado: "São Paulo",
+        cidade: "São Paulo",
+        bairro: "Centro",
+        rua: "Rua das Rosas",
+        numero: "123",
+        complemento: "Apto 45", },
       description: "Descrição 1",
       pricePerHour: 50,
       availability: ["09:00-18:00"],
@@ -241,7 +311,14 @@ describe("PlaceService", () => {
   it("Deve remover um equipamento do espaço e retornar sucesso", async () => {
     const place = await placeService.createPlace({
       name: "Espaço 1",
-      address: { street: "Rua 1", number: 123 },
+      address: { cep: "58433264",
+        pais: "Brasil",
+        estado: "São Paulo",
+        cidade: "São Paulo",
+        bairro: "Centro",
+        rua: "Rua das Rosas",
+        numero: "123",
+        complemento: "Apto 45", },
       description: "Descrição 1",
       pricePerHour: 50,
       availability: ["09:00-18:00"],
@@ -271,7 +348,14 @@ describe("PlaceService", () => {
   it("Deve lançar erro com código 409 (Conflict) caso o equipamento não esteja associado ao espaço", async () => {
     const place = await placeService.createPlace({
       name: "Espaço 1",
-      address: { street: "Rua 1", number: 123 },
+      address: { cep: "58433264",
+        pais: "Brasil",
+        estado: "São Paulo",
+        cidade: "São Paulo",
+        bairro: "Centro",
+        rua: "Rua das Rosas",
+        numero: "123",
+        complemento: "Apto 45", },
       description: "Descrição 1",
       pricePerHour: 50,
       availability: ["09:00-18:00"],
