@@ -161,7 +161,7 @@ describe("Testes de PlaceController", () => {
         availability: "night",
         ownerId: userId,
       });
-      place2Id = aux.body.id;
+    place2Id = aux.body.id;
 
     const response = await request(app)
       .get("/places/own")
@@ -172,13 +172,16 @@ describe("Testes de PlaceController", () => {
   });
 
   it("Deve retornar código 204 (No Content) caso não existam espaços cadastrados.", async () => {
-    await request(app).delete(`/places/${placeId}`).set("Authorization", `Bearer ${token}`);
-    await request(app).delete(`/places/${place2Id}`).set("Authorization", `Bearer ${token}`);
+    await request(app)
+      .delete(`/places/${placeId}`)
+      .set("Authorization", `Bearer ${token}`);
+    await request(app)
+      .delete(`/places/${place2Id}`)
+      .set("Authorization", `Bearer ${token}`);
     const response = await request(app)
       .get("/places/own")
       .set("Authorization", `Bearer ${token}`);
-    
-    console.log(response.body);
+
     expect(response.status).toBe(204);
   });
 
@@ -238,6 +241,7 @@ describe("Testes de PlaceController", () => {
         availability: "afternoon",
         ownerId: userId,
       });
+    console.log(response.body);
     expect(response.status).toBe(200);
     expect(response.body.name).toBe("someplaceNew");
   });
