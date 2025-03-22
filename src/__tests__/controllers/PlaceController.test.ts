@@ -73,7 +73,7 @@ describe("Testes de PlaceController", () => {
     await sequelize.close();
   });
 
-  it("Deve criar um espaço e retornar código 201", async () => {
+  it("Deve criar um espaço e retornar código 201 (Created) quando receber todos os dados válidos na requisição", async () => {
     const response = await request(app)
       .post("/places")
       .set("Authorization", `Bearer ${token}`)
