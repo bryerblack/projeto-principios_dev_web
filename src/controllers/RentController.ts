@@ -47,6 +47,20 @@ export class RentController {
     }
   }
 
+  // 🔹 Rota para buscar places disponíveis com paginação
+  async getAvailablePlaces(req: Request, res: Response) {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      const places = await placeService.getAvailablePlaces(page, limit);
+      res.json(places);
+    } catch (error: any) {
+      const status = error instanceof HttpError ? error.statusCode : 500;
+      res.status(status).json({ message: error.message });
+    }
+  }
+
   // 🔹 Listar todas as locações
   async getAllRents(req: Request, res: Response) {
     try {
@@ -112,13 +126,12 @@ export class RentController {
     }
   }
 
-  // 🔹 Criar uma nova solicitação de aluguel
+  // 🔹 Usuário solicita um aluguel para um Place
   async requestRent(req: AuthenticatedRequest, res: Response) {
     try {
       const { placeId, schedules } = req.body;
       const renterId = req.user.id;
 
-      // ✅ 1. Verifica se os horários foram fornecidos corretamente
       if (!schedules || !Array.isArray(schedules) || schedules.length === 0) {
         res
           .status(400)
@@ -126,16 +139,21 @@ export class RentController {
         return;
       }
 
-      // ✅ 2. Verifica se o espaço existe e recupera o `ownerId`
       const place = await placeService.getPlaceById(placeId);
       if (!place) {
         res.status(404).json({ message: "Espaço não encontrado." });
         return;
       }
 
-      const ownerId = place.ownerId; // 🔹 Obtém o dono do espaço
+      // 🔹 Um usuário não pode alugar seu próprio espaço
+      if (place.ownerId === renterId) {
+        res
+          .status(403)
+          .json({ message: "Você não pode alugar seu próprio espaço." });
+        return;
+      }
 
-      // ✅ 3. Calcula o total do aluguel com base na duração e preço por hora
+      // 🔹 Calcula o valor total do aluguel
       let totalValue = 0;
       schedules.forEach((schedule: { startDate: string; endDate: string }) => {
         const startTime = new Date(schedule.startDate).getTime();
@@ -152,18 +170,20 @@ export class RentController {
         totalValue += durationInHours * place.pricePerHour;
       });
 
-      // ✅ 4. Cria a locação com status pendente
+      // 🔹 Cria a solicitação de aluguel
       const rent = await rentService.createRent({
         placeId,
-        ownerId, // 🔹 Agora incluímos `ownerId`
+        ownerId: place.ownerId,
         renterId,
-        status: "pendente",
+        status: "pending",
         totalValue,
-        paymentMethod: "não definido",
+        paymentMethod: "not_defined",
         schedules,
       });
 
-      res.status(201).json(rent);
+      res
+        .status(201)
+        .json({ message: "Solicitação de aluguel criada com sucesso.", rent });
       return;
     } catch (error: any) {
       const status = error instanceof HttpError ? error.statusCode : 500;
@@ -172,7 +192,7 @@ export class RentController {
     }
   }
 
-  // 🔹 Aprovar ou negar uma solicitação de aluguel
+  // 🔹 Dono do place pode aprovar ou rejeitar uma solicitação
   async approveOrRejectRent(req: AuthenticatedRequest, res: Response) {
     try {
       const { id } = req.params;
@@ -186,12 +206,12 @@ export class RentController {
       }
 
       const rent = await rentService.getRentById(id);
-
       if (!rent) {
         res.status(404).json({ message: "Locação não encontrada" });
         return;
       }
 
+      // 🔹 Somente o dono do Place pode aprovar/rejeitar
       if (rent.ownerId !== req.user.id) {
         res.status(403).json({
           message:
@@ -201,7 +221,6 @@ export class RentController {
       }
 
       const updatedRent = await rentService.updateRent(id, { status });
-
       res.json({
         message: `Locação ${status} com sucesso.`,
         rent: updatedRent,
@@ -227,6 +246,7 @@ export class RentController {
     }
   }
 
+  // 🔹 Usuário pode cancelar um pedido pendente
   async cancelRent(req: AuthenticatedRequest, res: Response) {
     try {
       const { id } = req.params;
@@ -252,7 +272,6 @@ export class RentController {
       }
 
       await rentService.cancelRent(id, req.user.id);
-
       res.status(200).json({ message: "Locação cancelada com sucesso." });
       return;
     } catch (error: any) {

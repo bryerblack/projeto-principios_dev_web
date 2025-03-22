@@ -57,6 +57,32 @@ export class PlaceService {
     });
   }
 
+  // 🔹 Obtém a lista de places disponíveis com paginação
+  async getAvailablePlaces(page: number = 1, limit: number = 10) {
+    try {
+      if (page < 1 || limit < 1) {
+        throw new HttpError("Parâmetros de paginação inválidos.", 400);
+      }
+
+      const offset = (page - 1) * limit;
+
+      const { places, total } = await placeRepository.findAvailablePlaces(
+        limit,
+        offset
+      );
+
+      return {
+        total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+        pageSize: places.length,
+        places,
+      };
+    } catch (error) {
+      throw new HttpError("Erro ao buscar espaços disponíveis.", 500);
+    }
+  }
+
   async getAllPlaces() {
     return await placeRepository.getAllPlaces();
   }
@@ -89,17 +115,17 @@ export class PlaceService {
 
   async deletePlace(id: string) {
     const place = await placeRepository.getPlaceById(id);
-  
+
     if (!place) {
       throw new HttpError("Espaço não encontrado.", 404);
     }
-  
+
     // 🔹 Verifica se há locações ativas antes de excluir
     const activeRents = await rentRepository.getActiveRentsByPlace(id);
     if (activeRents.length > 0) {
       throw new HttpError("Espaço tem locações ativas", 409);
     }
-  
+
     await placeRepository.deletePlace(id);
   }
 

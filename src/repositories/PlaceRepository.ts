@@ -38,4 +38,20 @@ export class PlaceRepository {
     if (!place) return null;
     return await place.update(data);
   }
+
+  async findAvailablePlaces(limit: number, offset: number) {
+    const { count, rows } = await Place.findAndCountAll({
+      where: {
+        isAvailable: true, // Apenas places disponíveis
+      },
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]], // 🔹 Ordena do mais recente para o mais antigo
+    });
+
+    return {
+      total: count, // Número total de places disponíveis
+      places: rows, // Lista de places retornados na página
+    };
+  }
 }

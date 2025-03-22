@@ -6,6 +6,11 @@ import { roleMiddleware } from "../middlewares/RoleMiddleware";
 const router = Router();
 const rentController = new RentController();
 
+// 🔹 Listar places disponíveis para aluguel com paginação
+router.get("/available", (req, res) =>
+  rentController.getAvailablePlaces(req, res)
+);
+
 // 🔹 Usuário pode solicitar um aluguel
 router.post("/request", authMiddleware, (req, res) =>
   rentController.requestRent(req, res)
@@ -26,6 +31,11 @@ router.post("/", authMiddleware, (req, res) =>
   rentController.createRent(req, res)
 );
 
+// 🔹 Usuário pode cancelar um aluguel próprio pendente
+router.put("/:id/cancel", authMiddleware, (req, res) =>
+  rentController.cancelRent(req, res)
+);
+
 // 🔹 Usuário pode editar um aluguel se tiver pelo menos um espaço criado
 router.put("/:id", authMiddleware, (req, res) =>
   rentController.updateRent(req, res)
@@ -34,11 +44,6 @@ router.put("/:id", authMiddleware, (req, res) =>
 // 🔹 Usuário pode deletar um aluguel se tiver pelo menos um espaço criado
 router.delete("/:id", authMiddleware, (req, res) =>
   rentController.deleteRent(req, res)
-);
-
-// 🔹 Usuário pode cancelar um aluguel próprio pendente
-router.put("/:id/cancel", authMiddleware, (req, res) =>
-  rentController.cancelRent(req, res)
 );
 
 // 🔹 Apenas admin pode visualizar todas as locações
