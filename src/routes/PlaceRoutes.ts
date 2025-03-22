@@ -11,6 +11,10 @@ router.post("/", authMiddleware, (req, res) =>
   placeController.createPlace(req, res)
 );
 
+router.get("/available", (req, res) =>
+  placeController.getAvailablePlaces(req, res)
+);
+
 // 🔹 Apenas ADMIN pode listar todos os places
 router.get("/all", authMiddleware, (req, res) =>
   placeController.getAllPlaces(req, res)

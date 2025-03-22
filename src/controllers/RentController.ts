@@ -167,7 +167,7 @@ export class RentController {
         }
 
         const durationInHours = (endTime - startTime) / (1000 * 60 * 60);
-        totalValue += durationInHours * place.pricePerHour;
+        totalValue += durationInHours * place.pricePerTurn;
       });
 
       // 🔹 Cria a solicitação de aluguel

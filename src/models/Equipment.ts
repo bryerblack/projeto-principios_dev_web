@@ -5,7 +5,7 @@ export class Equipment extends Model {
   public id!: string;
   public name!: string;
   public description!: string;
-  public pricePerHour!: number;
+  public pricePerTurn!: number;
   public quantityAvailable!: number;
   public place_id!: string;
 }
@@ -25,7 +25,7 @@ Equipment.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    pricePerHour: {
+    pricePerTurn: {
       type: DataTypes.FLOAT,
       allowNull: false,
     },

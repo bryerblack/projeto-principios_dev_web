@@ -4,7 +4,7 @@ export class EquipmentRepository {
   async createEquipment(data: {
     name: string;
     description?: string;
-    pricePerHour: number;
+    pricePerTurn: number;
     quantityAvailable: number;
     place_id: string;
   }) {

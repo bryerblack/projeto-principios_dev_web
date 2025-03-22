@@ -6,8 +6,11 @@ export class PlaceRepository {
     name: string;
     addressId: string;
     description?: string;
-    pricePerHour: number;
-    availability: string[];
+    pricePerTurn: number;
+    availability: {
+      day: string;
+      availableTurns: string[];
+    }[];
     ownerId: string;
   }) {
     return await Place.create(data);
@@ -42,16 +45,20 @@ export class PlaceRepository {
   async findAvailablePlaces(limit: number, offset: number) {
     const { count, rows } = await Place.findAndCountAll({
       where: {
-        isAvailable: true, // Apenas places disponíveis
+        availability: {
+          [Symbol.for("sequelize.json")]: {
+            [Symbol.for("sequelize.ne")]: [],
+          },
+        },
       },
       limit,
       offset,
-      order: [["createdAt", "DESC"]], // 🔹 Ordena do mais recente para o mais antigo
+      order: [["createdAt", "DESC"]],
     });
 
     return {
-      total: count, // Número total de places disponíveis
-      places: rows, // Lista de places retornados na página
+      total: count,
+      places: rows,
     };
   }
 }
