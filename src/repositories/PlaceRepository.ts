@@ -51,6 +51,7 @@ export class PlaceRepository {
           },
         },
       },
+      include: [{ model: Address }], // 🔹 Inclui o endereço completo
       limit,
       offset,
       order: [["createdAt", "DESC"]],
