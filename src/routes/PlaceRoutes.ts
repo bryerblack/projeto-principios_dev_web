@@ -30,6 +30,11 @@ router.get("/:id", authMiddleware, (req, res) =>
   placeController.getPlaceById(req, res)
 );
 
+// 🔹 Apenas ADMIN pode buscar um place pelo ID
+router.get("/", (req, res) =>
+  placeController.getAllPlaces(req, res)
+);
+
 // 🔹 Usuário autenticado pode editar apenas seu próprio place
 router.put("/:id", authMiddleware, (req, res) =>
   placeController.updatePlace(req, res)
