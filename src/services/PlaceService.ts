@@ -11,6 +11,21 @@ const equipmentRepository = new EquipmentRepository();
 const addressRepository = new AddressRepository();
 const rentRepository = new RentRepository();
 
+interface PlaceResponseDto {
+  id: string;
+  name: string;
+  description?: string;
+  pricePerTurn: number;
+  availability: {
+    day: string;
+    availableTurns: string[];
+  }[];
+  ownerId: string;
+  address: Address;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 export class PlaceService {
   async createPlace(data: {
     name: string;
@@ -31,7 +46,7 @@ export class PlaceService {
       availableTurns: string[];
     }[];
     ownerId: string;
-  }) {
+  }): Promise<PlaceResponseDto> {
     let existingAddress = await addressRepository.findByFields({
       cep: data.address.cep,
       rua: data.address.rua,
@@ -48,7 +63,7 @@ export class PlaceService {
       }
     }
 
-    return await placeRepository.createPlace({
+    const place = await placeRepository.createPlace({
       name: data.name,
       addressId: existingAddress.id,
       description: data.description,
@@ -56,6 +71,11 @@ export class PlaceService {
       availability: data.availability,
       ownerId: data.ownerId,
     });
+
+    return {
+      ...place.toJSON(),
+      address: existingAddress,
+    };
   }
 
   async getAvailablePlaces(page: number = 1, limit: number = 10) {
@@ -71,12 +91,24 @@ export class PlaceService {
         offset
       );
 
+      const placesWithAddress: PlaceResponseDto[] = await Promise.all(
+        places.map(async (place) => {
+          const address = await addressRepository.getAddressById(
+            place.addressId
+          );
+          return {
+            ...place.toJSON(),
+            address,
+          };
+        })
+      );
+
       return {
         total,
         totalPages: Math.ceil(total / limit),
         currentPage: page,
         pageSize: places.length,
-        places,
+        places: placesWithAddress,
       };
     } catch (error) {
       console.log(error.message);
@@ -84,16 +116,40 @@ export class PlaceService {
     }
   }
 
-  async getAllPlaces() {
-    return await placeRepository.getAllPlaces();
+  async getAllPlaces(): Promise<PlaceResponseDto[]> {
+    const places = await placeRepository.getAllPlaces();
+    return Promise.all(
+      places.map(async (place) => {
+        const address = await addressRepository.getAddressById(place.addressId);
+        return {
+          ...place.toJSON(),
+          address,
+        };
+      })
+    );
   }
 
-  async getPlaceById(id: string) {
-    return await placeRepository.getPlaceById(id);
+  async getPlaceById(id: string): Promise<PlaceResponseDto | null> {
+    const place = await placeRepository.getPlaceById(id);
+    if (!place) return null;
+    const address = await addressRepository.getAddressById(place.addressId);
+    return {
+      ...place.toJSON(),
+      address,
+    };
   }
 
-  async getPlacesByOwner(ownerId: string) {
-    return await placeRepository.getPlacesByOwner(ownerId);
+  async getPlacesByOwner(ownerId: string): Promise<PlaceResponseDto[]> {
+    const places = await placeRepository.getPlacesByOwner(ownerId);
+    return Promise.all(
+      places.map(async (place) => {
+        const address = await addressRepository.getAddressById(place.addressId);
+        return {
+          ...place.toJSON(),
+          address,
+        };
+      })
+    );
   }
 
   async getPlaceByAddress(addressId: string) {
