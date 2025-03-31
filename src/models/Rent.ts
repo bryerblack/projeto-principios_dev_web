@@ -1,7 +1,7 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/database";
 import Rating from "./Rating";
-import RentSchedule from "./RentSchedule";
+import { Turn } from "../enums/turn.enum";
 
 export class Rent extends Model {
   public id!: string;
@@ -11,7 +11,10 @@ export class Rent extends Model {
   public totalValue!: number;
   public status!: string;
   public paymentMethod!: string;
-  public schedules!: [{ startDate: string, endDate: string}]
+  schedules!: {
+    day: string; // mesmo formato de Place: "2024-03-23"
+    turns: Turn[]; // ex: ["manhã", "tarde"]
+  }[];
 }
 
 Rent.init(
@@ -73,8 +76,7 @@ Rent.init(
   }
 );
 
-// Relacionamento com RentSchedule e Rating
-Rent.hasMany(RentSchedule, { foreignKey: "rentId", onDelete: "CASCADE" });
+// Relacionamento com Rating
 Rent.hasMany(Rating, { foreignKey: "rentId" });
 
 export default Rent;
