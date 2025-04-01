@@ -111,7 +111,6 @@ export class PlaceService {
         places: placesWithAddress,
       };
     } catch (error) {
-      console.log(error.message);
       throw new HttpError("Erro ao buscar espaços disponíveis.", 500);
     }
   }

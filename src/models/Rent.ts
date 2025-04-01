@@ -1,7 +1,7 @@
 import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/database";
 import Rating from "./Rating";
-import { Turn } from "../enums/turn.enum";
+import { Status, Turn } from "../enums/turn.enum";
 
 export class Rent extends Model {
   public id!: string;
@@ -9,7 +9,7 @@ export class Rent extends Model {
   public ownerId!: string;
   public renterId!: string;
   public totalValue!: number;
-  public status!: string;
+  public status!: Status;
   public paymentMethod!: string;
   schedules!: {
     day: string; // mesmo formato de Place: "2024-03-23"
@@ -57,12 +57,9 @@ Rent.init(
       allowNull: false,
     },
     status: {
-      type: DataTypes.STRING,
+      type: DataTypes.ENUM("pendente", "confirmado", "rejeitado", "cancelado", "finalizado"),
       allowNull: false,
       defaultValue: "pendente",
-      validate: {
-        isIn: [["pendente", "confirmado", "cancelado", "finalizado"]],
-      },
     },
     paymentMethod: {
       type: DataTypes.STRING,

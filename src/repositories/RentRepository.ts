@@ -1,4 +1,4 @@
-import { Transaction } from "sequelize";
+import { Op, Transaction } from "sequelize";
 import Rent from "../models/Rent";
 
 export class RentRepository {
@@ -39,7 +39,11 @@ export class RentRepository {
   }
 
   async getRentsByUser(userId: string) {
-    return await Rent.findAll({ where: { renterId: userId } });
+    return await Rent.findAll({
+      where: {
+        [Op.or]: [{ renterId: userId }, { ownerId: userId }],
+      },
+    });
   }
 
   async updateRent(id: string, data: Partial<Rent>) {

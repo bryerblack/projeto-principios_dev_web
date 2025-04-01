@@ -111,7 +111,7 @@ export class RentController {
 
   async requestRent(req: AuthenticatedRequest, res: Response) {
     try {
-      const { placeId, schedules } = req.body;
+      const { placeId, ownerId, schedules, paymentMethod, totalValue, status } = req.body;
       const renterId = req.user.id;
 
       if (!schedules || !Array.isArray(schedules) || schedules.length === 0) {
@@ -131,15 +131,13 @@ export class RentController {
           .json({ message: "Você não pode alugar seu próprio espaço." });
       }
 
-      const totalValue = schedules.length * place.pricePerTurn;
-
       const rent = await rentService.createRent({
         placeId,
-        ownerId: place.ownerId,
+        ownerId,
         renterId,
-        status: "pending",
+        status,
         totalValue,
-        paymentMethod: "not_defined",
+        paymentMethod: paymentMethod,
         schedules,
       });
 
@@ -215,7 +213,7 @@ export class RentController {
           });
       }
 
-      if (rent.status !== "pending") {
+      if (rent.status !== "pendente") {
         return res
           .status(400)
           .json({
