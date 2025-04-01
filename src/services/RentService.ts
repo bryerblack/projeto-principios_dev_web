@@ -3,7 +3,8 @@ import { PlaceRepository } from "../repositories/PlaceRepository";
 import { Transaction } from "sequelize";
 import Rent from "../models/Rent";
 import { HttpError } from "../errors/HttpError";
-import { Turn } from "../enums/turn.enum";
+import { Status, Turn } from "../enums/turn.enum";
+import sequelize from "../config/database";
 
 const rentRepository = new RentRepository();
 const placeRepository = new PlaceRepository();
@@ -18,22 +19,20 @@ export class RentService {
     paymentMethod: string;
     schedules: { day: string; turns: Turn[] }[];
   }) {
-    return await RentRepository.sequelize!.transaction(
-      async (transaction: Transaction) => {
-        return await rentRepository.createRent(
-          {
-            placeId: data.placeId,
-            ownerId: data.ownerId,
-            renterId: data.renterId,
-            totalValue: data.totalValue,
-            status: data.status,
-            paymentMethod: data.paymentMethod,
-            schedules: data.schedules,
-          },
-          transaction
-        );
-      }
-    );
+    return await sequelize.transaction(async (transaction: Transaction) => {
+      return await rentRepository.createRent(
+        {
+          placeId: data.placeId,
+          ownerId: data.ownerId,
+          renterId: data.renterId,
+          totalValue: data.totalValue,
+          status: data.status,
+          paymentMethod: data.paymentMethod,
+          schedules: data.schedules,
+        },
+        transaction
+      );
+    });
   }
 
   async getAllRents() {
@@ -66,8 +65,8 @@ export class RentService {
     return await rentRepository.deleteRent(id);
   }
 
-  async approveOrRejectRent(rentId: string, ownerId: string, status: string) {
-    if (!["approved", "rejected"].includes(status)) {
+  async approveOrRejectRent(rentId: string, ownerId: string, status: Status) {
+    if (!["confirmado", "rejeitado"].includes(status)) {
       throw new HttpError(
         "Status inválido. Use 'approved' ou 'rejected'.",
         406
@@ -109,7 +108,7 @@ export class RentService {
       );
     }
 
-    if (rent.status !== "pending") {
+    if (rent.status !== "pendente") {
       throw new HttpError(
         "Somente locações pendentes podem ser canceladas.",
         409
