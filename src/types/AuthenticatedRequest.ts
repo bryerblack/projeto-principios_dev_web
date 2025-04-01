@@ -5,4 +5,5 @@ export interface AuthenticatedRequest extends Request {
     id: string;
     role: "admin" | "user";
   };
+  file?: Express.Multer.File;
 }
