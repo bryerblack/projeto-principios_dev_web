@@ -11,6 +11,10 @@ router.post("/", authMiddleware, (req, res) =>
   placeController.createPlace(req, res)
 );
 
+router.get("/available", (req, res) =>
+  placeController.getAvailablePlaces(req, res)
+);
+
 // 🔹 Apenas ADMIN pode listar todos os places
 router.get("/all", authMiddleware, (req, res) =>
   placeController.getAllPlaces(req, res)
@@ -24,6 +28,11 @@ router.get("/own", authMiddleware, (req, res) =>
 // 🔹 Apenas ADMIN pode buscar um place pelo ID
 router.get("/:id", authMiddleware, (req, res) =>
   placeController.getPlaceById(req, res)
+);
+
+// 🔹 Apenas ADMIN pode buscar um place pelo ID
+router.get("/", (req, res) =>
+  placeController.getAllPlaces(req, res)
 );
 
 // 🔹 Usuário autenticado pode editar apenas seu próprio place

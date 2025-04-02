@@ -41,4 +41,8 @@ export class UserService {
   async deleteUser(id: string) {
     return await userRepository.deleteUser(id);
   }
+
+  async updateProfileImage(userId: string, imagePath: string) {
+    return await userRepository.updateProfileImage(userId, imagePath);
+  }
 }

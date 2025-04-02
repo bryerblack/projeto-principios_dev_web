@@ -88,7 +88,7 @@ describe("Testes da UserController", () => {
     expect(response.body.message).toBe("Email já cadastrado.");
   });
 
-  it("Deve retornar todos os usuários com código 200", async () => {
+  it("Deve retornar código 200 (OK) e listar todos os usuários se houver usuários cadastrados", async () => {
     await request(app)
       .post("/users")
       .set("Authorization", `Bearer ${adminToken}`)
@@ -119,7 +119,7 @@ describe("Testes da UserController", () => {
     expect(response.body.length).toBeGreaterThan(1);
   });
 
-  it("Deve retornar código 204 caso não haja usuários", async () => {
+  it("Deve retornar código 204 (No Content) caso não haja usuários cadastrados", async () => {
     const response = await request(app)
       .get("/users")
       .set("Authorization", `Bearer ${adminToken}`);
@@ -132,7 +132,7 @@ describe("Testes da UserController", () => {
     }
   });
 
-  it("Deve retornar usuário quando receber um ID válido", async () => {
+  it("Deve retornar código 200 (OK) e um usuário quando receber um id válido", async () => {
     const user = await request(app)
       .post("/users")
       .set("Authorization", `Bearer ${adminToken}`)
@@ -153,7 +153,7 @@ describe("Testes da UserController", () => {
     expect(response.body.email).toBe("usuario3@example.com");
   });
 
-  it("Deve retornar código 404 caso o ID não corresponda a um usuário existente", async () => {
+  it("Deve retornar código 404 (Not Found) caso o id recebido não corresponda a um usuário existente", async () => {
     const response = await request(app)
       .get(`/users/123e4567-e89b-12d3-a456-426614174000`)
       .set("Authorization", `Bearer ${adminToken}`);
@@ -162,7 +162,7 @@ describe("Testes da UserController", () => {
     expect(response.body.message).toBe("Usuário não encontrado.");
   });
 
-  it("Deve deletar usuário com sucesso e retornar código 200", async () => {
+  it("Deve retornar código 200 (OK) e mensagem de sucesso ao receber id de usuário válido e existente", async () => {
     const user = await request(app)
       .post("/users")
       .set("Authorization", `Bearer ${adminToken}`)
@@ -182,7 +182,7 @@ describe("Testes da UserController", () => {
     expect(response.body.message).toBe("Usuário deletado com sucesso.");
   });
 
-  it("Deve retornar código 404 caso tente deletar usuário inexistente", async () => {
+  it("Deve retornar código 404 (Not Found) caso o id recebido corresponda a um usuário não existente", async () => {
     const response = await request(app)
       .delete(`/users/123e4567-e89b-12d3-a456-426614174000`)
       .set("Authorization", `Bearer ${adminToken}`);
@@ -191,7 +191,7 @@ describe("Testes da UserController", () => {
     expect(response.body.message).toBe("Usuário não encontrado.");
   });
 
-  it("Deve atualizar usuário e retornar código 200", async () => {
+  it("Deve atualizar usuário e retornar código 200 (OK)", async () => {
     const user = await request(app)
       .post("/users")
       .set("Authorization", `Bearer ${adminToken}`)

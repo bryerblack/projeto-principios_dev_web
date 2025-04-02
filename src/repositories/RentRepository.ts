@@ -1,9 +1,9 @@
-import { Transaction } from "sequelize";
+import { Op, Transaction } from "sequelize";
 import Rent from "../models/Rent";
-import RentSchedule from "../models/RentSchedule";
 
 export class RentRepository {
   static sequelize: any;
+
   async createRent(
     data: {
       placeId: string;
@@ -12,39 +12,22 @@ export class RentRepository {
       totalValue: number;
       status: string;
       paymentMethod: string;
-      schedules: { startDate: string; endDate: string }[];
+      schedules: { day: string; turns: string[] }[];
     },
     transaction?: Transaction
   ) {
-    return await Rent.sequelize!.transaction(async (t) => {
-      const rentTransaction = transaction || t;
-
-      const rent = await Rent.create(
-        {
-          placeId: data.placeId,
-          ownerId: data.ownerId,
-          renterId: data.renterId,
-          totalValue: data.totalValue,
-          status: data.status,
-          paymentMethod: data.paymentMethod,
-        },
-        { transaction: rentTransaction }
-      );
-
-      if (data.schedules.length > 0) {
-        const schedules = data.schedules.map((schedule) => ({
-          rentId: rent.id,
-          startDate: new Date(schedule.startDate),
-          endDate: new Date(schedule.endDate),
-        }));
-
-        await RentSchedule.bulkCreate(schedules, {
-          transaction: rentTransaction,
-        });
-      }
-
-      return rent;
-    });
+    return await Rent.create(
+      {
+        placeId: data.placeId,
+        ownerId: data.ownerId,
+        renterId: data.renterId,
+        totalValue: data.totalValue,
+        status: data.status,
+        paymentMethod: data.paymentMethod,
+        schedules: data.schedules,
+      },
+      { transaction }
+    );
   }
 
   async getAllRents() {
@@ -56,53 +39,29 @@ export class RentRepository {
   }
 
   async getRentsByUser(userId: string) {
-    return await Rent.findAll({ where: { ownerId: userId } });
+    return await Rent.findAll({
+      where: {
+        [Op.or]: [{ renterId: userId }, { ownerId: userId }],
+      },
+    });
   }
 
-  async updateRent(
-    id: string,
-    data: Partial<Rent> & {
-      schedules?: { startDate: string; endDate: string }[];
-    }
-  ) {
+  async updateRent(id: string, data: Partial<Rent>) {
     const rent = await Rent.findByPk(id);
     if (!rent) return null;
-
-    return await Rent.sequelize!.transaction(async (transaction) => {
-      // Atualiza os dados da locação
-      await rent.update(data, { transaction });
-
-      // Se houver horários na atualização, precisamos atualizar RentSchedule
-      if (data.schedules) {
-        // Remove os horários antigos
-        await RentSchedule.destroy({
-          where: { rentId: id },
-          transaction,
-        });
-
-        // Cria os novos horários
-        const schedules = data.schedules.map((schedule) => ({
-          rentId: id,
-          startDate: new Date(schedule.startDate),
-          endDate: new Date(schedule.endDate),
-        }));
-
-        await RentSchedule.bulkCreate(schedules, { transaction });
-      }
-
-      return rent;
-    });
+    await rent.update(data);
+    return rent;
   }
 
   async updateRentStatus(rentId: string, status: string) {
     return await Rent.update({ status }, { where: { id: rentId } });
   }
 
-  async getActiveRentsByPlace(place_id: string) {
+  async getActiveRentsByPlace(placeId: string) {
     return await Rent.findAll({
       where: {
-        placeId: place_id,
-        status: "confirmado", // Supondo que haja um campo `status` para indicar locações ativas
+        placeId,
+        status: "confirmado",
       },
     });
   }

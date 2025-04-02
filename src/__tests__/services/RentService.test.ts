@@ -110,7 +110,7 @@ describe("RentService", () => {
   });
 
   // Teste para createRent
-  it("Deve criar uma locação com sucesso (Código HTTP 201)", async () => {
+  it("Deve criar uma locação e retornar o objeto criado quando os dados forem válidos", async () => {
     const rentData = {
       placeId: mockPlaceId,
       ownerId: mockUserId,
@@ -129,7 +129,7 @@ describe("RentService", () => {
     expect(rent.schedules.length).toBeGreaterThan(0);
   });
 
-  it("Deve lançar erro se não fornecer dados obrigatórios na criação (Código HTTP 400)", async () => {
+  it("Deve lançar erro com código 400 (Bad Request) caso os dados sejam inválidos ou incompletos", async () => {
     const rentData = {
       placeId: "", // Dados obrigatórios estão faltando
       ownerId: mockUserId,
@@ -145,7 +145,7 @@ describe("RentService", () => {
     );
   });
 
-  it("Deve lançar erro se os dados de pagamento forem inválidos (Código HTTP 400)", async () => {
+  it("Deve lançar erro com código 400 (Bad Request) caso os dados de pagamento forem inválidos", async () => {
     const rentData = {
       placeId: mockPlaceId,
       ownerId: mockUserId,
@@ -162,14 +162,14 @@ describe("RentService", () => {
   });
 
   // Testes para getAllRents
-  it("Deve retornar todas as locações cadastradas (Código HTTP 200)", async () => {
+  it("Deve retornar todas as locações cadastradas", async () => {
     const rents = await rentService.getAllRents();
 
     expect(rents).toHaveLength(1);
     expect(rents[0]).toHaveProperty("id");
   });
 
-  it("Deve lançar erro se não houver locações (Código HTTP 404)", async () => {
+  it("Deve lançar erro com código 404 (Not Found) caso não existam locações cadastradas", async () => {
     rentRepository.getAllRents = jest.fn().mockResolvedValue([]);
 
     await expect(rentService.getAllRents()).rejects.toThrowError(
@@ -178,14 +178,14 @@ describe("RentService", () => {
   });
 
   // Testes para getRentById
-  it("Deve retornar a locação correspondente ao ID (Código HTTP 200)", async () => {
+  it("Deve retornar a locação correspondente ao ID", async () => {
     const rent = await rentService.getRentById(mockRentId);
 
     expect(rent).toHaveProperty("id", mockRentId);
     expect(rent.ownerId).toEqual(mockUserId);
   });
 
-  it("Deve lançar erro se a locação não for encontrada (Código HTTP 404)", async () => {
+  it("Deve lançar erro com código 404 (Not Found) caso a locação não exista", async () => {
     rentRepository.getRentById = jest.fn().mockResolvedValue(null);
 
     await expect(rentService.getRentById(mockRentId)).rejects.toThrowError(
@@ -194,7 +194,7 @@ describe("RentService", () => {
   });
 
   // Testes para updateRent
-  it("Deve atualizar a locação e retornar os dados atualizados (Código HTTP 200)", async () => {
+  it("Deve atualizar a locação e retornar os dados atualizados", async () => {
     const updatedRent = await rentService.updateRent(mockRentId, {
       totalValue: 1200,
       status: "approved",
@@ -206,7 +206,7 @@ describe("RentService", () => {
     expect(updatedRent.schedules.length).toBeGreaterThan(0);
   });
 
-  it("Deve lançar erro se a locação não for encontrada para atualização (Código HTTP 404)", async () => {
+  it("Deve lançar erro com código 404 (Not Found) caso a locação não exista", async () => {
     rentRepository.updateRent = jest.fn().mockResolvedValue(null);
 
     await expect(
@@ -219,13 +219,13 @@ describe("RentService", () => {
   });
 
   // Testes para deleteRent
-  it("Deve deletar a locação e retornar confirmação (Código HTTP 200)", async () => {
+  it("Deve deletar a locação e retornar confirmação quando o ID for válido", async () => {
     const response = await rentService.deleteRent(mockRentId);
 
     expect(response).toHaveProperty("success", true);
   });
 
-  it("Deve lançar erro se a locação não for encontrada para exclusão (Código HTTP 404)", async () => {
+  it("Deve lançar erro com código 404 (Not Found) caso a locação não exista", async () => {
     rentRepository.deleteRent = jest.fn().mockResolvedValue(null);
 
     await expect(rentService.deleteRent(mockRentId)).rejects.toThrowError(

@@ -4,11 +4,27 @@ import Address from "../models/Address";
 import { AddressRepository } from "../repositories/AddressRepository";
 import { RentRepository } from "../repositories/RentRepository";
 import { HttpError } from "../errors/HttpError";
+import { Turn } from "../enums/turn.enum";
 
 const placeRepository = new PlaceRepository();
 const equipmentRepository = new EquipmentRepository();
 const addressRepository = new AddressRepository();
 const rentRepository = new RentRepository();
+
+interface PlaceResponseDto {
+  id: string;
+  name: string;
+  description?: string;
+  pricePerTurn: number;
+  availability: {
+    day: string;
+    availableTurns: string[];
+  }[];
+  ownerId: string;
+  address: Address;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
 
 export class PlaceService {
   async createPlace(data: {
@@ -24,11 +40,13 @@ export class PlaceService {
       complemento?: string;
     };
     description?: string;
-    pricePerHour: number;
-    availability: string[];
+    pricePerTurn: number;
+    availability: {
+      day: string;
+      availableTurns: string[];
+    }[];
     ownerId: string;
-  }) {
-    // 🔹 Verifica se o endereço já existe antes de criar
+  }): Promise<PlaceResponseDto> {
     let existingAddress = await addressRepository.findByFields({
       cep: data.address.cep,
       rua: data.address.rua,
@@ -37,7 +55,6 @@ export class PlaceService {
     if (!existingAddress) {
       existingAddress = await addressRepository.createAddress(data.address);
     } else {
-      // 🔹 Verifica se já existe um espaço nesse endereço
       const existingPlace = await placeRepository.getPlaceByAddress(
         existingAddress.id
       );
@@ -46,27 +63,92 @@ export class PlaceService {
       }
     }
 
-    // 🔹 Agora cria o espaço com o ID do endereço
-    return await placeRepository.createPlace({
+    const place = await placeRepository.createPlace({
       name: data.name,
       addressId: existingAddress.id,
       description: data.description,
-      pricePerHour: data.pricePerHour,
+      pricePerTurn: data.pricePerTurn,
       availability: data.availability,
       ownerId: data.ownerId,
     });
+
+    return {
+      ...place.toJSON(),
+      address: existingAddress,
+    };
   }
 
-  async getAllPlaces() {
-    return await placeRepository.getAllPlaces();
+  async getAvailablePlaces(page: number = 1, limit: number = 10) {
+    try {
+      if (page < 1 || limit < 1) {
+        throw new HttpError("Parâmetros de paginação inválidos.", 400);
+      }
+
+      const offset = (page - 1) * limit;
+
+      const { places, total } = await placeRepository.findAvailablePlaces(
+        limit,
+        offset
+      );
+
+      const placesWithAddress: PlaceResponseDto[] = await Promise.all(
+        places.map(async (place) => {
+          const address = await addressRepository.getAddressById(
+            place.addressId
+          );
+          return {
+            ...place.toJSON(),
+            address,
+          };
+        })
+      );
+
+      return {
+        total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+        pageSize: places.length,
+        places: placesWithAddress,
+      };
+    } catch (error) {
+      throw new HttpError("Erro ao buscar espaços disponíveis.", 500);
+    }
   }
 
-  async getPlaceById(id: string) {
-    return await placeRepository.getPlaceById(id);
+  async getAllPlaces(): Promise<PlaceResponseDto[]> {
+    const places = await placeRepository.getAllPlaces();
+    return Promise.all(
+      places.map(async (place) => {
+        const address = await addressRepository.getAddressById(place.addressId);
+        return {
+          ...place.toJSON(),
+          address,
+        };
+      })
+    );
   }
 
-  async getPlacesByOwner(ownerId: string) {
-    return await placeRepository.getPlacesByOwner(ownerId);
+  async getPlaceById(id: string): Promise<PlaceResponseDto | null> {
+    const place = await placeRepository.getPlaceById(id);
+    if (!place) return null;
+    const address = await addressRepository.getAddressById(place.addressId);
+    return {
+      ...place.toJSON(),
+      address,
+    };
+  }
+
+  async getPlacesByOwner(ownerId: string): Promise<PlaceResponseDto[]> {
+    const places = await placeRepository.getPlacesByOwner(ownerId);
+    return Promise.all(
+      places.map(async (place) => {
+        const address = await addressRepository.getAddressById(place.addressId);
+        return {
+          ...place.toJSON(),
+          address,
+        };
+      })
+    );
   }
 
   async getPlaceByAddress(addressId: string) {
@@ -79,8 +161,11 @@ export class PlaceService {
       name: string;
       address: Address;
       description?: string;
-      pricePerHour: number;
-      availability: string[];
+      pricePerTurn: number;
+      availability: {
+        day: string;
+        availableTurns: Turn[];
+      }[];
       ownerId: string;
     }>
   ) {
@@ -89,17 +174,16 @@ export class PlaceService {
 
   async deletePlace(id: string) {
     const place = await placeRepository.getPlaceById(id);
-  
+
     if (!place) {
       throw new HttpError("Espaço não encontrado.", 404);
     }
-  
-    // 🔹 Verifica se há locações ativas antes de excluir
+
     const activeRents = await rentRepository.getActiveRentsByPlace(id);
     if (activeRents.length > 0) {
       throw new HttpError("Espaço tem locações ativas", 409);
     }
-  
+
     await placeRepository.deletePlace(id);
   }
 
@@ -108,11 +192,10 @@ export class PlaceService {
     data: {
       name: string;
       description?: string;
-      pricePerHour: number;
+      pricePerTurn: number;
       quantityAvailable: number;
     }
   ) {
-    // 🔹 Verifica se o equipamento já existe para esse espaço
     const existingEquipment = await equipmentRepository.findByPlaceAndName(
       place_id,
       data.name
