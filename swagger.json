@@ -121,6 +121,7 @@
       "get": {
         "summary": "Listar todos os usuários",
         "tags": ["Usuários"],
+        "security": [{ "BearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Lista de usuários cadastrados",
@@ -863,6 +864,12 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
     "schemas": {
       "User": {
         "type": "object",

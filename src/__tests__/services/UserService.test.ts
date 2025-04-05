@@ -34,7 +34,7 @@ describe("UserService", () => {
       profession: "Engenheiro",
     };
 
-    (User.create as jest.Mock).mockResolvedValue(mockUser);
+    (User.create as jest.MockedFunction<typeof User.create>).mockResolvedValue(mockUser);
 
     const user = await userService.createUser({
       name: "João",

@@ -31,7 +31,7 @@ router.get("/", authMiddleware, roleMiddleware(["admin"]), (req, res) =>
 );
 
 // 🔹 Buscar usuário por ID (Apenas Admins)
-router.get("/:id", authMiddleware, roleMiddleware(["admin"]), (req, res) =>
+router.get("/:id", authMiddleware, roleMiddleware(["admin", "user"]), (req, res) =>
   userController.getUserById(req, res)
 );
 

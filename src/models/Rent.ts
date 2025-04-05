@@ -11,7 +11,7 @@ export class Rent extends Model {
   public totalValue!: number;
   public status!: Status;
   public paymentMethod!: string;
-  schedules!: {
+  public schedules!: {
     day: string; // mesmo formato de Place: "2024-03-23"
     turns: Turn[]; // ex: ["manhã", "tarde"]
   }[];

@@ -155,7 +155,7 @@ export class RentController {
       const { id } = req.params;
       const { status } = req.body;
 
-      if (!["approved", "rejected"].includes(status)) {
+      if (!["confirmado", "rejeitado"].includes(status)) {
         return res
           .status(400)
           .json({ message: "Status inválido. Use 'approved' ou 'rejected'." });
