@@ -1,5 +1,7 @@
 import { Op, Transaction } from "sequelize";
 import Rent from "../models/Rent";
+import User from "../models/User";
+import Place from "../models/Place";
 
 export class RentRepository {
   static sequelize: any;
@@ -43,6 +45,24 @@ export class RentRepository {
       where: {
         [Op.or]: [{ renterId: userId }, { ownerId: userId }],
       },
+      include: [
+        {
+          model: User,
+          as: "renter",
+          attributes: ["id", "name", "email", "profileImage"],
+        },
+        {
+          model: User,
+          as: "owner",
+          attributes: ["id", "name", "email", "profileImage"],
+        },
+        {
+          model: Place,
+          as: "place",
+          attributes: ["id", "name", "description", "pricePerTurn"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
     });
   }
 
