@@ -77,10 +77,4 @@ Place.init(
   }
 );
 
-// 🔗 Relacionamentos
-Place.belongsTo(Address, { foreignKey: "addressId" });
-Place.hasMany(Equipment, { foreignKey: "placeId" });
-Place.hasMany(Rent, { foreignKey: "placeId" });
-Place.hasMany(Rating, { foreignKey: "placeId" });
-
 export default Place;

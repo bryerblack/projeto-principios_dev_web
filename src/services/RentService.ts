@@ -9,6 +9,42 @@ import sequelize from "../config/database";
 const rentRepository = new RentRepository();
 const placeRepository = new PlaceRepository();
 
+function mapRentToDTO(rent: any) {
+  return {
+    id: rent.id,
+    status: rent.status,
+    totalValue: rent.totalValue,
+    paymentMethod: rent.paymentMethod,
+    createdAt: rent.createdAt,
+    schedules: rent.schedules,
+
+    place: rent.place
+      ? {
+          id: rent.place.id,
+          name: rent.place.name,
+          pricePerTurn: rent.place.pricePerTurn,
+        }
+      : null,
+
+    renter: rent.renter
+      ? {
+          id: rent.renter.id,
+          name: rent.renter.name,
+          email: rent.renter.email,
+          profileImage: rent.renter.profileImage,
+        }
+      : null,
+    owner: rent.owner
+      ? {
+          id: rent.owner.id,
+          name: rent.owner.name,
+          email: rent.owner.email,
+          profileImage: rent.owner.profileImage,
+        }
+      : null,
+  };
+}
+
 export class RentService {
   async createRent(data: {
     placeId: string;
@@ -44,7 +80,8 @@ export class RentService {
   }
 
   async getRentsByUserId(userId: string) {
-    return await rentRepository.getRentsByUser(userId);
+    const rents = await rentRepository.getRentsByUser(userId);
+    return rents.map(mapRentToDTO);
   }
 
   async updateRent(id: string, data: Partial<Rent>) {

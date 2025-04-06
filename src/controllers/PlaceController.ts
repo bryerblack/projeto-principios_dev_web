@@ -274,6 +274,7 @@ export class PlaceController {
       res.status(200).json(result);
       return;
     } catch (error: any) {
+      console.log(error)
       res.status(error.statusCode || 500).json({
         message: error.message || "Erro ao buscar espaços disponíveis.",
       });

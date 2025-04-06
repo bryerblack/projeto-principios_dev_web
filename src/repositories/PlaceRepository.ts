@@ -17,11 +17,11 @@ export class PlaceRepository {
   }
 
   async getAllPlaces() {
-    return await Place.findAll({ include: [{ model: Address }] });
+    return await Place.findAll({ include: [{ model: Address, as: "address" }] });
   }
 
   async getPlaceById(id: string) {
-    return await Place.findByPk(id, { include: [{ model: Address }] });
+    return await Place.findByPk(id, { include: [{ model: Address, as: "address" }] });
   }
 
   async deletePlace(id: string) {
@@ -33,7 +33,7 @@ export class PlaceRepository {
   }
 
   async getPlaceByAddress(addressId: string) {
-    return await Place.findOne({ where: { addressId }, include: [Address] });
+    return await Place.findOne({ where: { addressId }, include: [{ model: Address, as: "address" }] });
   }
 
   async updatePlace(id: string, data: Partial<Place>) {
@@ -51,7 +51,7 @@ export class PlaceRepository {
           },
         },
       },
-      include: [{ model: Address }], // 🔹 Inclui o endereço completo
+      include: [{ model: Address, as: "address" }], // 🔹 Inclui o endereço completo
       limit,
       offset,
       order: [["createdAt", "DESC"]],

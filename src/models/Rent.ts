@@ -2,6 +2,8 @@ import { Model, DataTypes } from "sequelize";
 import sequelize from "../config/database";
 import Rating from "./Rating";
 import { Status, Turn } from "../enums/turn.enum";
+import User from "./User";
+import Place from "./Place";
 
 export class Rent extends Model {
   public id!: string;
@@ -12,8 +14,8 @@ export class Rent extends Model {
   public status!: Status;
   public paymentMethod!: string;
   public schedules!: {
-    day: string; // mesmo formato de Place: "2024-03-23"
-    turns: Turn[]; // ex: ["manhã", "tarde"]
+    day: string;
+    turns: Turn[]; 
   }[];
 }
 
@@ -57,12 +59,22 @@ Rent.init(
       allowNull: false,
     },
     status: {
-      type: DataTypes.ENUM("pendente", "confirmado", "rejeitado", "cancelado", "finalizado"),
+      type: DataTypes.ENUM(
+        "pendente",
+        "confirmado",
+        "rejeitado",
+        "cancelado",
+        "finalizado"
+      ),
       allowNull: false,
       defaultValue: "pendente",
     },
     paymentMethod: {
       type: DataTypes.STRING,
+      allowNull: false,
+    },
+    schedules: {
+      type: DataTypes.JSON,
       allowNull: false,
     },
   },
@@ -72,8 +84,5 @@ Rent.init(
     timestamps: true,
   }
 );
-
-// Relacionamento com Rating
-Rent.hasMany(Rating, { foreignKey: "rentId" });
 
 export default Rent;

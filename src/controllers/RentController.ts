@@ -158,7 +158,7 @@ export class RentController {
       if (!["confirmado", "rejeitado"].includes(status)) {
         return res
           .status(400)
-          .json({ message: "Status inválido. Use 'approved' ou 'rejected'." });
+          .json({ message: "Status inválido. Use 'aprovado' ou 'rejeitado'." });
       }
 
       const rent = await rentService.getRentById(id);

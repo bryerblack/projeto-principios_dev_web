@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import "./models/associations";
 import UserRoutes from "./routes/userRoutes";
 import PlaceRoutes from "./routes/PlaceRoutes";
 import RentRoutes from "./routes/RentRoutes";
