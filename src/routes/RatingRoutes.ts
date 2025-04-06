@@ -15,4 +15,8 @@ router.get("/:id", (req, res) => {
 
 router.delete("/:id", (req, res) => ratingController.deleteRating(req, res));
 
+router.post("/user", ratingController.rateUser);
+
+router.post("/place", ratingController.ratePlace);
+
 export default router;

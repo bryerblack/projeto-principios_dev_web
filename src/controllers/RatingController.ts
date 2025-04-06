@@ -67,4 +67,44 @@ export class RatingController {
         .json({ message: "Erro ao deletar avaliação", error: error.message });
     }
   }
+
+  async rateUser(req: Request, res: Response) {
+    try {
+      const { reviewerId, reviewedId, rentId, description, rating } = req.body;
+  
+      const newRating = await ratingService.createRating({
+        reviewerId,
+        reviewedId,
+        rentId,
+        description,
+        rating,
+      });
+  
+      await ratingService.updateUserAverageRating(reviewedId);
+  
+      res.status(201).json(newRating);
+    } catch (error: any) {
+      res.status(500).json({ message: "Erro ao avaliar usuário", error: error.message });
+    }
+  }
+  
+  async ratePlace(req: Request, res: Response) {
+    try {
+      const { reviewerId, reviewedId, rentId, description, rating } = req.body;
+  
+      const newRating = await ratingService.createRating({
+        reviewerId,
+        reviewedId,
+        rentId,
+        description,
+        rating,
+      });
+  
+      await ratingService.updatePlaceAverageRating(reviewedId);
+  
+      res.status(201).json(newRating);
+    } catch (error: any) {
+      res.status(500).json({ message: "Erro ao avaliar lugar", error: error.message });
+    }
+  }
 }
