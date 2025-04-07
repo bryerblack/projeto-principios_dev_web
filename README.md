@@ -1,5 +1,5 @@
-# Rent'a'Space
-O Rent'a'Space é um projeto web com o intuito de disponibilizar para profissionais de diversas areas a possibilidade de conseguir uma renda extra alugando seus espaços de trabalho ao mesmo tempo que proporciona a trabalhadores que não possuem um espaço proprio a possibilidade de alugar um local já equipado, seja para praticar ou atender a clientes, sem a necessidade de investir em um ambiente, o que pode ser dificil para pessoas passando por crises financeiras, que possuem um espaço temporariamente inacessivel ou que simplesmente não possuem a demanda para um local próprio, talvez ainda iniciante na profissão.
+# Alugaí
+O Alugaí é um projeto web com o intuito de disponibilizar para profissionais de diversas areas a possibilidade de conseguir uma renda extra alugando seus espaços de trabalho ao mesmo tempo que proporciona a trabalhadores que não possuem um espaço proprio a possibilidade de alugar um local já equipado, seja para praticar ou atender a clientes, sem a necessidade de investir em um ambiente, o que pode ser dificil para pessoas passando por crises financeiras, que possuem um espaço temporariamente inacessivel ou que simplesmente não possuem a demanda para um local próprio, talvez ainda iniciante na profissão.
 
 Aqui teremos diversos espaços para incontáveis profissões, desde consultorios, oficinas, estudios de gravação; todos equipados e disponibilizados por pessoas da area que possuem estes locais e se interessam em disponibilizar para colegas de profissão, por um preço é claro.
 
