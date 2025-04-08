@@ -3,6 +3,7 @@ import sequelize from "../config/database";
 import bcrypt from "bcryptjs";
 
 export class User extends Model {
+  public profileImage?: string;
   public id!: string;
   public name!: string;
   public email!: string;
@@ -19,6 +20,10 @@ export class User extends Model {
 
 User.init(
   {
+    profileImage: {
+      type: DataTypes.STRING,
+      allowNull: true, // imagem é opcional
+    },
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,

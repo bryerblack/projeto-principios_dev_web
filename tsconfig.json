@@ -6,7 +6,9 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    // Retirar
+    "skipLibCheck": true
   },
   "include": ["src"],
   "exclude": ["node_modules"]

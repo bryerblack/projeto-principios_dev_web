@@ -15,20 +15,19 @@ export class PlaceController {
       }
 
       const ownerId = (req as AuthenticatedRequest).user.id;
-      const { name, address, description, pricePerHour, availability } =
+      const { name, address, description, pricePerTurn, availability } =
         req.body;
 
-      if (!name || !address || !description || !pricePerHour || !availability) {
+      if (!name || !address || !description || !pricePerTurn || !availability) {
         res.status(400).json({ message: "Dados do espaço inválidos" });
         return;
       }
 
-      // 🔹 Apenas chama o service, sem interagir com o AddressRepository diretamente
       const place = await placeService.createPlace({
         name,
         address,
         description,
-        pricePerHour,
+        pricePerTurn,
         availability,
         ownerId,
       });
@@ -97,17 +96,12 @@ export class PlaceController {
           .json({ message: "Acesso negado. Token não fornecido." });
         return;
       }
+
       const userId = (req as any).user.id;
       const { id } = req.params;
-      const { name, address, description, pricePerHour, availability } =
-        req.body;
-      if (!req.body) {
-        res.status(400).json({ message: "Dados inválidos" });
-        return;
-      }
 
       const place = await placeService.getPlacesByOwner(userId);
-      if (!place) {
+      if (!place || place.length === 0) {
         res.status(404).json({ message: "Espaço não encontrado." });
         return;
       }
@@ -120,7 +114,6 @@ export class PlaceController {
       }
 
       const updatedPlace = await placeService.updatePlace(id, req.body);
-      console.log(updatedPlace)
       res.status(200).json(updatedPlace);
       return;
     } catch (error: any) {
@@ -197,7 +190,7 @@ export class PlaceController {
       return;
     }
   }
-
+  
   async addEquipmentToPlace(req: Request, res: Response) {
     try {
       if (!(req as AuthenticatedRequest).user) {
@@ -206,10 +199,11 @@ export class PlaceController {
           .json({ message: "Acesso negado. Token não fornecido." });
         return;
       }
-      const { place_id } = req.params;
-      const { name, description, pricePerHour, quantityAvailable } = req.body;
 
-      if (!name || !description || !pricePerHour || !quantityAvailable) {
+      const { place_id } = req.params;
+      const { name, description, pricePerTurn, quantityAvailable } = req.body;
+
+      if (!name || !description || !pricePerTurn || !quantityAvailable) {
         res.status(400).json({ message: "Dados do equipamento inválidos" });
         return;
       }
@@ -223,7 +217,7 @@ export class PlaceController {
       const equipment = await placeService.addEquipmentToPlace(place_id, {
         name,
         description,
-        pricePerHour,
+        pricePerTurn,
         quantityAvailable,
       });
 
@@ -266,6 +260,24 @@ export class PlaceController {
       res
         .status(500)
         .json({ message: "Erro ao remover equipamento", error: error.message });
+      return;
+    }
+  }
+
+  async getAvailablePlaces(req: Request, res: Response) {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 10;
+
+      const result = await placeService.getAvailablePlaces(page, limit);
+
+      res.status(200).json(result);
+      return;
+    } catch (error: any) {
+      console.log(error)
+      res.status(error.statusCode || 500).json({
+        message: error.message || "Erro ao buscar espaços disponíveis.",
+      });
       return;
     }
   }

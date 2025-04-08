@@ -77,7 +77,7 @@ describe("Testes de RentController", () => {
     await sequelize.close();
   });
 
-  it("Deve criar um aluguel e retornar código 201", async () => {
+  it("Deve criar uma locação e retornar código 201 (Created) quando receber todos os dados válidos na requisição", async () => {
     const response = await request(app)
       .post("/rents")
       .set("Authorization", `Bearer ${token}`)
@@ -100,7 +100,7 @@ describe("Testes de RentController", () => {
     expect(response.body.paymentMethod).toBe("cartão");
   });
 
-  it("Não deve criar um aluguel e deve retornar código 409 caso o aluguel já exista", async () => {
+  it("Deve retornar código 409 (conflict) caso o aluguel já exista", async () => {
     await request(app)
       .post("/rents")
       .set("Authorization", `Bearer ${token}`)

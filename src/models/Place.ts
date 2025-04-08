@@ -5,14 +5,18 @@ import Rent from "./Rent";
 import Rating from "./Rating";
 import User from "./User";
 import Address from "./Address";
+import { Turn } from "../enums/turn.enum";
 
 export class Place extends Model {
   public id!: string;
   public name!: string;
   public addressId!: string;
   public description?: string;
-  public pricePerHour!: number;
-  public availability!: string[];
+  public pricePerTurn!: number;
+  public availability!: {
+    day: string; // Ex: "2024-03-23"
+    availableTurns: Turn[]; // Ex: ["manhã", "tarde"]
+  }[];
   public ownerId!: string;
   public averageRating!: number;
 }
@@ -32,7 +36,7 @@ Place.init(
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: Address, // 🔹 Relacionamento com Address
+        model: Address,
         key: "id",
       },
       onDelete: "CASCADE",
@@ -42,7 +46,7 @@ Place.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    pricePerHour: {
+    pricePerTurn: {
       type: DataTypes.FLOAT,
       allowNull: false,
     },
@@ -72,11 +76,5 @@ Place.init(
     timestamps: true,
   }
 );
-
-// Relacionamentos
-Place.belongsTo(Address, { foreignKey: "addressId" });
-Place.hasMany(Equipment, { foreignKey: "placeId" });
-Place.hasMany(Rent, { foreignKey: "placeId" });
-Place.hasMany(Rating, { foreignKey: "placeId" });
 
 export default Place;

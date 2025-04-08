@@ -1,11 +1,11 @@
 import app from "./server";
 import sequelize from "./config/database";
-
+import "./models/associations";
 const PORT = process.env.PORT || 3000;
 
 // Testando a conexão com o banco e iniciando o servidor
 sequelize
-  .sync({ force: true })
+  .sync()
   .then(() => {
     console.log("✅ Conexão com o MySQL estabelecida!");
     app.listen(PORT, () => {

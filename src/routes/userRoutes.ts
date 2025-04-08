@@ -2,6 +2,7 @@ import { Router } from "express";
 import { UserController } from "../controllers/UserController";
 import { authMiddleware } from "../middlewares/AuthMiddleware";
 import { roleMiddleware } from "../middlewares/RoleMiddleware";
+import { upload } from "../middlewares/UploadMiddleware";
 
 const router = Router();
 const userController = new UserController();
@@ -30,18 +31,25 @@ router.get("/", authMiddleware, roleMiddleware(["admin"]), (req, res) =>
 );
 
 // 🔹 Buscar usuário por ID (Apenas Admins)
-router.get("/:id", authMiddleware, roleMiddleware(["admin"]), (req, res) =>
+router.get("/:id", authMiddleware, roleMiddleware(["admin", "user"]), (req, res) =>
   userController.getUserById(req, res)
 );
 
 // 🔹 Atualizar usuário (Apenas Admins)
-router.put("/:id", authMiddleware, roleMiddleware(["admin"]), (req, res) =>
+router.put("/:id", authMiddleware, (req, res) =>
   userController.updateUser(req, res)
 );
 
 // 🔹 Deletar usuário (Apenas Admins)
 router.delete("/:id", authMiddleware, roleMiddleware(["admin"]), (req, res) =>
   userController.deleteUser(req, res)
+);
+
+router.patch(
+  "/upload-profile-image",
+  authMiddleware,
+  upload.single("profileImage"),
+  (req, res) => userController.uploadProfileImage(req, res)
 );
 
 export default router;

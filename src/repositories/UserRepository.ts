@@ -32,4 +32,15 @@ export class UserRepository {
   async deleteUser(id: string) {
     return await User.destroy({ where: { id: id } });
   }
+
+  async updateProfileImage(userId: string, imagePath: string) {
+    const user = await User.findByPk(userId);
+    if (!user) {
+      throw new Error("Usuário não encontrado.");
+    }
+  
+    user.profileImage = imagePath;
+    await user.save();
+    return user;
+  }
 }

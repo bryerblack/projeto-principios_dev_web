@@ -1,13 +1,49 @@
 import { RentRepository } from "../repositories/RentRepository";
 import { PlaceRepository } from "../repositories/PlaceRepository";
 import { Transaction } from "sequelize";
-import { RentScheduleRepository } from "../repositories/RentScheduleRepository";
 import Rent from "../models/Rent";
 import { HttpError } from "../errors/HttpError";
+import { Status, Turn } from "../enums/turn.enum";
+import sequelize from "../config/database";
 
 const rentRepository = new RentRepository();
 const placeRepository = new PlaceRepository();
-const rentScheduleRepository = new RentScheduleRepository();
+
+function mapRentToDTO(rent: any) {
+  return {
+    id: rent.id,
+    status: rent.status,
+    totalValue: rent.totalValue,
+    paymentMethod: rent.paymentMethod,
+    createdAt: rent.createdAt,
+    schedules: rent.schedules,
+
+    place: rent.place
+      ? {
+          id: rent.place.id,
+          name: rent.place.name,
+          pricePerTurn: rent.place.pricePerTurn,
+        }
+      : null,
+
+    renter: rent.renter
+      ? {
+          id: rent.renter.id,
+          name: rent.renter.name,
+          email: rent.renter.email,
+          profileImage: rent.renter.profileImage,
+        }
+      : null,
+    owner: rent.owner
+      ? {
+          id: rent.owner.id,
+          name: rent.owner.name,
+          email: rent.owner.email,
+          profileImage: rent.owner.profileImage,
+        }
+      : null,
+  };
+}
 
 export class RentService {
   async createRent(data: {
@@ -17,28 +53,30 @@ export class RentService {
     totalValue: number;
     status: string;
     paymentMethod: string;
-    schedules: { startDate: string; endDate: string }[]; // Novo formato
+    schedules: { day: string; turns: Turn[] }[];
   }) {
-    return await RentRepository.sequelize!.transaction(
-      async (transaction: Transaction) => {
-        return await rentRepository.createRent(
-          {
-            placeId: data.placeId,
-            ownerId: data.ownerId,
-            renterId: data.renterId,
-            totalValue: data.totalValue,
-            status: data.status,
-            paymentMethod: data.paymentMethod,
-            schedules: data.schedules, // Passando os horários para o repositório
-          },
-          transaction
-        );
-      }
-    );
+    return await sequelize.transaction(async (transaction: Transaction) => {
+      return await rentRepository.createRent(
+        {
+          placeId: data.placeId,
+          ownerId: data.ownerId,
+          renterId: data.renterId,
+          totalValue: data.totalValue,
+          status: data.status,
+          paymentMethod: data.paymentMethod,
+          schedules: data.schedules,
+        },
+        transaction
+      );
+    });
   }
 
   async getAllRents() {
     return await rentRepository.getAllRents();
+  }
+
+  async updateRentStatus(id: string, status: Status) {
+    return await rentRepository.updateRent(id, { status });
   }
 
   async getRentById(id: string) {
@@ -46,40 +84,17 @@ export class RentService {
   }
 
   async getRentsByUserId(userId: string) {
-    return await rentRepository.getRentsByUser(userId);
+    const rents = await rentRepository.getRentsByUser(userId);
+    return rents.map(mapRentToDTO);
   }
 
-  async updateRent(
-    id: string,
-    data: Partial<Rent> & {
-      schedules?: { startDate: string; endDate: string }[];
-    }
-  ) {
-    // Buscar a locação no banco
+  async updateRent(id: string, data: Partial<Rent>) {
     const rent = await rentRepository.getRentById(id);
     if (!rent) {
       throw new HttpError("Locação não encontrada.", 404);
     }
 
-    // Atualiza os dados da locação
-    const updatedRent = await rentRepository.updateRent(id, data);
-
-    // Se houver atualização dos horários, precisamos atualizar RentSchedule
-    if (data.schedules) {
-      // Remove os horários antigos
-      await rentScheduleRepository.deleteSchedulesByRentId(id);
-
-      // Adiciona os novos horários
-      const schedules = data.schedules.map((schedule) => ({
-        rentId: id,
-        startDate: new Date(schedule.startDate),
-        endDate: new Date(schedule.endDate),
-      }));
-
-      await rentScheduleRepository.createSchedules(schedules);
-    }
-
-    return updatedRent;
+    return await rentRepository.updateRent(id, data);
   }
 
   async deleteRent(id: string) {
@@ -91,9 +106,12 @@ export class RentService {
     return await rentRepository.deleteRent(id);
   }
 
-  async approveOrRejectRent(rentId: string, ownerId: string, status: string) {
-    if (!["approved", "rejected"].includes(status)) {
-      throw new HttpError("Status inválido. Use 'approved' ou 'rejected'.", 406);
+  async approveOrRejectRent(rentId: string, ownerId: string, status: Status) {
+    if (!["confirmado", "rejeitado"].includes(status)) {
+      throw new HttpError(
+        "Status inválido. Use 'approved' ou 'rejected'.",
+        406
+      );
     }
 
     const rent = await rentRepository.getRentById(rentId);
@@ -103,7 +121,10 @@ export class RentService {
     }
 
     if (rent.ownerId !== ownerId) {
-      throw new HttpError("Você não tem permissão para cancelar esta locação.", 403);
+      throw new HttpError(
+        "Você não tem permissão para cancelar esta locação.",
+        403
+      );
     }
 
     return await rentRepository.updateRent(rentId, { status });
@@ -120,13 +141,19 @@ export class RentService {
     if (!rent) {
       throw new HttpError("Locação não encontrada.", 404);
     }
-  
+
     if (rent.renterId !== userId) {
-      throw new HttpError("Você não tem permissão para cancelar esta locação.", 403);
+      throw new HttpError(
+        "Você não tem permissão para cancelar esta locação.",
+        403
+      );
     }
-  
-    if (rent.status !== "pending") {
-      throw new HttpError("Somente locações pendentes podem ser canceladas.", 409);
+
+    if (rent.status !== "pendente") {
+      throw new HttpError(
+        "Somente locações pendentes podem ser canceladas.",
+        409
+      );
     }
 
     return await rentRepository.updateRentStatus(rentId, "cancelado");

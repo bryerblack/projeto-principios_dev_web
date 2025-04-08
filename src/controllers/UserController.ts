@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
 import { UserService } from "../services/userService";
+import User from "../models/User";
+import { upload } from "../middlewares/UploadMiddleware";
+import { AuthenticatedRequest } from "../types/AuthenticatedRequest";
+import path from "path";
 
 const userService = new UserService();
 
@@ -82,7 +86,7 @@ export class UserController {
     }
   }
 
-  async getSelf(req: Request, res: Response) {
+  async getSelf(req: AuthenticatedRequest, res: Response) {
     try {
       const userId = (req as any).user.id;
       const user = await userService.getUserById(userId);
@@ -96,11 +100,11 @@ export class UserController {
       res
         .status(500)
         .json({ message: "Erro ao obter usuário", error: error.message });
-        return;
+      return;
     }
   }
 
-  async updateUser(req: Request, res: Response) {
+  async updateUser(req: AuthenticatedRequest, res: Response) {
     try {
       const { id } = req.params;
       const { name, email, password, phone, profession } = req.body;
@@ -164,6 +168,35 @@ export class UserController {
       res
         .status(500)
         .json({ message: "Erro ao deletar usuário", error: error.message });
+      return;
+    }
+  }
+
+  async uploadProfileImage(req: AuthenticatedRequest, res: Response) {
+    try {
+      const userId = req.user.id;
+      const file = req.file;
+
+      if (!file || !file.path) {
+        res.status(400).json({ message: "Nenhuma imagem enviada." });
+        return;
+      }
+
+      // O Cloudinary já retorna a URL completa no campo `path`
+      const imageUrl = file.path;
+
+      const updatedUser = await userService.updateProfileImage(
+        userId,
+        imageUrl
+      );
+
+      res.status(200).json({
+        message: "Foto de perfil atualizada com sucesso.",
+        user: updatedUser,
+      });
+      return;
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
       return;
     }
   }

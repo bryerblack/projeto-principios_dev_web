@@ -121,6 +121,7 @@
       "get": {
         "summary": "Listar todos os usuários",
         "tags": ["Usuários"],
+        "security": [{ "BearerAuth": [] }],
         "responses": {
           "200": {
             "description": "Lista de usuários cadastrados",
@@ -863,6 +864,12 @@
     }
   },
   "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    },
     "schemas": {
       "User": {
         "type": "object",
@@ -903,8 +910,14 @@
             "type": "string",
             "example": "Espaço para atendimentos odontológicos equipado com cadeira e materiais básicos."
           },
-          "pricePerHour": { "type": "number", "example": 150.0 },
-          "availability": { "type": "object", "example": {} },
+          "pricePerTurn": { "type": "number", "example": 150.0 },
+          "availability": {
+            "type": "object",
+            "example": {
+              "day": "2024-03-23",
+              "availableTurns": "manhã"
+            }
+          },
           "ownerId": {
             "type": "string",
             "example": "5d4a7f16-b2a3-4e19-9cb5-d6b7a8e2f471"

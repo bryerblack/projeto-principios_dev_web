@@ -6,19 +6,22 @@ export class PlaceRepository {
     name: string;
     addressId: string;
     description?: string;
-    pricePerHour: number;
-    availability: string[];
+    pricePerTurn: number;
+    availability: {
+      day: string;
+      availableTurns: string[];
+    }[];
     ownerId: string;
   }) {
     return await Place.create(data);
   }
 
   async getAllPlaces() {
-    return await Place.findAll({ include: [{ model: Address }] });
+    return await Place.findAll({ include: [{ model: Address, as: "address" }] });
   }
 
   async getPlaceById(id: string) {
-    return await Place.findByPk(id, { include: [{ model: Address }] });
+    return await Place.findByPk(id, { include: [{ model: Address, as: "address" }] });
   }
 
   async deletePlace(id: string) {
@@ -30,12 +33,33 @@ export class PlaceRepository {
   }
 
   async getPlaceByAddress(addressId: string) {
-    return await Place.findOne({ where: { addressId }, include: [Address] });
+    return await Place.findOne({ where: { addressId }, include: [{ model: Address, as: "address" }] });
   }
 
   async updatePlace(id: string, data: Partial<Place>) {
     const place = await Place.findByPk(id);
     if (!place) return null;
     return await place.update(data);
+  }
+
+  async findAvailablePlaces(limit: number, offset: number) {
+    const { count, rows } = await Place.findAndCountAll({
+      where: {
+        availability: {
+          [Symbol.for("sequelize.json")]: {
+            [Symbol.for("sequelize.ne")]: [],
+          },
+        },
+      },
+      include: [{ model: Address, as: "address" }], // 🔹 Inclui o endereço completo
+      limit,
+      offset,
+      order: [["createdAt", "DESC"]],
+    });
+
+    return {
+      total: count,
+      places: rows,
+    };
   }
 }
