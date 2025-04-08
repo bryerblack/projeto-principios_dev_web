@@ -10,8 +10,11 @@ export class RatingRepository {
   }) {
     return await Rating.create(data);
   }
-  
-  async updateRating(id: string, data: Partial<{ description: string; rating: number }>) {
+
+  async updateRating(
+    id: string,
+    data: Partial<{ description: string; rating: number }>
+  ) {
     const rating = await Rating.findByPk(id);
     if (!rating) return null;
     return await rating.update(data);
@@ -19,7 +22,13 @@ export class RatingRepository {
 
   async getRatingsByReviewedId(reviewedId: string) {
     return await Rating.findAll({
-      where: { reviewedId }
+      where: { reviewedId },
+    });
+  }
+
+  async getRatingsByReviewer(reviewerId: string) {
+    return await Rating.findAll({
+      where: { reviewerId },
     });
   }
 

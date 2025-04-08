@@ -3,6 +3,7 @@ import { RentService } from "../services/RentService";
 import { AuthenticatedRequest } from "../types/AuthenticatedRequest";
 import { PlaceService } from "../services/PlaceService";
 import { HttpError } from "../errors/HttpError";
+import { Status } from "../enums/turn.enum";
 
 const rentService = new RentService();
 const placeService = new PlaceService();
@@ -111,7 +112,8 @@ export class RentController {
 
   async requestRent(req: AuthenticatedRequest, res: Response) {
     try {
-      const { placeId, ownerId, schedules, paymentMethod, totalValue, status } = req.body;
+      const { placeId, ownerId, schedules, paymentMethod, totalValue, status } =
+        req.body;
       const renterId = req.user.id;
 
       if (!schedules || !Array.isArray(schedules) || schedules.length === 0) {
@@ -167,12 +169,10 @@ export class RentController {
       }
 
       if (rent.ownerId !== req.user.id) {
-        return res
-          .status(403)
-          .json({
-            message:
-              "Você não tem permissão para aprovar ou rejeitar esta locação.",
-          });
+        return res.status(403).json({
+          message:
+            "Você não tem permissão para aprovar ou rejeitar esta locação.",
+        });
       }
 
       const updatedRent = await rentService.updateRent(id, { status });
@@ -183,6 +183,28 @@ export class RentController {
     } catch (error: any) {
       const status = error instanceof HttpError ? error.statusCode : 500;
       return res.status(status).json({ message: error.message });
+    }
+  }
+
+  async finalizeRent(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const rent = await rentService.getRentById(id);
+      if (rent.status !== Status.CONFIRMADO) {
+        return res
+          .status(400)
+          .json({
+            message: "Apenas locações confirmadas podem ser finalizadas.",
+          });
+      }
+
+      await rentService.updateRentStatus(id, Status.FINALIZADO);
+      res.status(200).json({ message: "Locação finalizada com sucesso" });
+    } catch (error: any) {
+      res.status(500).json({
+        message: "Erro ao finalizar locação",
+        error: error.message,
+      });
     }
   }
 
@@ -206,19 +228,15 @@ export class RentController {
       }
 
       if (rent.renterId !== req.user.id) {
-        return res
-          .status(403)
-          .json({
-            message: "Você não tem permissão para cancelar esta locação.",
-          });
+        return res.status(403).json({
+          message: "Você não tem permissão para cancelar esta locação.",
+        });
       }
 
       if (rent.status !== "pendente") {
-        return res
-          .status(400)
-          .json({
-            message: "Somente locações pendentes podem ser canceladas.",
-          });
+        return res.status(400).json({
+          message: "Somente locações pendentes podem ser canceladas.",
+        });
       }
 
       await rentService.cancelRent(id, req.user.id);

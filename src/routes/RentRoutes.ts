@@ -19,6 +19,8 @@ router.post(
   rentController.requestRent.bind(rentController)
 );
 
+router.put("/:id/finalize", authMiddleware, rentController.finalizeRent.bind(rentController));
+
 // 🔹 Dono do espaço pode aprovar ou rejeitar solicitação de aluguel
 router.put(
   "/:id/approve",

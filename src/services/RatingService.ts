@@ -6,7 +6,6 @@ const ratingRepository = new RatingRepository();
 const userRepository = new UserRepository();
 const placeRepository = new PlaceRepository();
 
-
 export class RatingService {
   async createRating(data: {
     reviewerId: string;
@@ -15,10 +14,17 @@ export class RatingService {
     description?: string;
     rating: number;
   }) {
-    return await ratingRepository.createRating(data);
+    const newRating = await ratingRepository.createRating(data);
+
+    await this.updateUserAverageRating(data.reviewedId);
+
+    return newRating;
   }
 
   async updateUserAverageRating(userId: string) {
+    const user = await userRepository.getUserById(userId);
+    if (!user) return;
+
     const ratings = await ratingRepository.getRatingsByReviewedId(userId);
     if (ratings.length === 0) return;
 
@@ -28,14 +34,8 @@ export class RatingService {
     await userRepository.updateUser(userId, { averageRating: average });
   }
 
-  async updatePlaceAverageRating(placeId: string) {
-    const ratings = await ratingRepository.getRatingsByReviewedId(placeId);
-    if (ratings.length === 0) return;
-
-    const average =
-      ratings.reduce((sum, r) => sum + r.rating, 0) / ratings.length;
-
-    await placeRepository.updatePlace(placeId, { averageRating: average });
+  async getRatingsByReviewer(reviewerId: string) {
+    return await ratingRepository.getRatingsByReviewer(reviewerId);
   }
 
   async getAllRatings() {

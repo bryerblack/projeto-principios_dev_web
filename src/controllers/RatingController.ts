@@ -18,10 +18,12 @@ export class RatingController {
       });
 
       res.status(201).json(newRating);
+      return;
     } catch (error: any) {
       res
         .status(500)
         .json({ message: "Erro ao criar avaliação", error: error.message });
+      return;
     }
   }
 
@@ -30,10 +32,12 @@ export class RatingController {
     try {
       const ratings = await ratingService.getAllRatings();
       res.json(ratings);
+      return;
     } catch (error: any) {
       res
         .status(500)
         .json({ message: "Erro ao obter avaliações", error: error.message });
+      return;
     }
   }
 
@@ -44,14 +48,27 @@ export class RatingController {
       const rating = await ratingService.getRatingById(id);
 
       if (!rating) {
-        return res.status(404).json({ message: "Avaliação não encontrada" });
+        res.status(404).json({ message: "Avaliação não encontrada" });
+        return;
       }
 
       res.json(rating);
+      return;
     } catch (error: any) {
       res
         .status(500)
         .json({ message: "Erro ao obter avaliação", error: error.message });
+      return;
+    }
+  }
+
+  async getRatingsByReviewer(req: Request, res: Response) {
+    try {
+      const { reviewerId } = req.params;
+      const ratings = await ratingService.getRatingsByReviewer(reviewerId);
+      res.json(ratings);
+    } catch (error: any) {
+      res.status(500).json({ message: "Erro ao buscar avaliações", error: error.message });
     }
   }
 
@@ -61,17 +78,19 @@ export class RatingController {
       const { id } = req.params;
       await ratingService.deleteRating(id);
       res.json({ message: "Avaliação deletada com sucesso" });
+      return;
     } catch (error: any) {
       res
         .status(500)
         .json({ message: "Erro ao deletar avaliação", error: error.message });
+      return;
     }
   }
 
   async rateUser(req: Request, res: Response) {
     try {
       const { reviewerId, reviewedId, rentId, description, rating } = req.body;
-  
+
       const newRating = await ratingService.createRating({
         reviewerId,
         reviewedId,
@@ -79,32 +98,16 @@ export class RatingController {
         description,
         rating,
       });
-  
+
       await ratingService.updateUserAverageRating(reviewedId);
-  
+
       res.status(201).json(newRating);
+      return;
     } catch (error: any) {
-      res.status(500).json({ message: "Erro ao avaliar usuário", error: error.message });
-    }
-  }
-  
-  async ratePlace(req: Request, res: Response) {
-    try {
-      const { reviewerId, reviewedId, rentId, description, rating } = req.body;
-  
-      const newRating = await ratingService.createRating({
-        reviewerId,
-        reviewedId,
-        rentId,
-        description,
-        rating,
-      });
-  
-      await ratingService.updatePlaceAverageRating(reviewedId);
-  
-      res.status(201).json(newRating);
-    } catch (error: any) {
-      res.status(500).json({ message: "Erro ao avaliar lugar", error: error.message });
+      res
+        .status(500)
+        .json({ message: "Erro ao avaliar usuário", error: error.message });
+      return;
     }
   }
 }

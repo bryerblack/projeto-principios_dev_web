@@ -75,6 +75,10 @@ export class RentService {
     return await rentRepository.getAllRents();
   }
 
+  async updateRentStatus(id: string, status: Status) {
+    return await rentRepository.updateRent(id, { status });
+  }
+
   async getRentById(id: string) {
     return await rentRepository.getRentById(id);
   }
